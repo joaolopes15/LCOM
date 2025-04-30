@@ -8,6 +8,15 @@
 
 // Any header files included below this line should have been created by you
 
+#include "graphics.h"
+#include "keyboard.c"
+#include "timer.c"
+
+extern vbe_mode_info_t mode_info;
+extern uint8_t scancode;
+extern int counter;
+extern int hook_id;
+
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)
   lcf_set_language("EN-US");
@@ -32,28 +41,98 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-int(video_test_init)(uint16_t mode, uint8_t delay) {
-  /* To be completed */
-  printf("%s(0x%03x, %u): under construction\n", __func__, mode, delay);
+int (waiting_ESC_key)() {
 
-  return 1;
+  int ipc_status;
+  message msg;
+  uint8_t keyboard_mask;
+
+  if (keyboard_subscribe_int(&keyboard_mask) != 0) return 1;
+
+  while (scancode != BREAK_ESC){
+    if (driver_receive(ANY, &msg, &ipc_status) != 0) { 
+      printf("driver_receive failed");
+      continue;
+    }
+    if (is_ipc_notify(ipc_status)) {
+      switch (_ENDPOINT_P(msg.m_source)) {
+        case HARDWARE: 
+          if (msg.m_notify.interrupts & keyboard_mask) 
+            kbc_ih();
+            break;
+        default:
+          break; 
+      }
+    }
+  }
+
+  if (keyboard_unsubscribe_int() != 0) return 1;
+  return 0;
 }
 
-int(video_test_rectangle)(uint16_t mode, uint16_t x, uint16_t y,
-                          uint16_t width, uint16_t height, uint32_t color) {
-  /* To be completed */
-  printf("%s(0x%03X, %u, %u, %u, %u, 0x%08x): under construction\n",
-         __func__, mode, x, y, width, height, color);
+int(video_test_init)(uint16_t mode, uint8_t delay) {
+  
+  if (set_graphic_mode(mode) != 0) return 1;
+  sleep(delay);
 
-  return 1;
+  if (vg_exit() != 0) return 1;
+
+  return 0;
+}
+
+int(video_test_rectangle)(uint16_t mode, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color) {
+    // Construção do frame buffer virtual e físico
+    if (set_frame_buffer(mode) != 0) return 1;
+
+    // Mudança para o modo gráfico
+    if (set_graphic_mode(mode) != 0) return 1;
+  
+    // Normalizar a cor dependendo do modo
+    uint32_t new_color;
+    if (normalize_color(color, &new_color) != 0) return 1;
+  
+    // Desenha o rectângulo
+    if (vg_draw_rectangle(x, y, width, height, new_color) != 0) return 1;
+  
+    // Função que retorna apenas quando ESC é pressionado
+    if (waiting_ESC_key() != 0) return 1;
+  
+    // De regresso ao modo texto
+    if (vg_exit() != 0) return 1;
+  
+  return 0;
 }
 
 int(video_test_pattern)(uint16_t mode, uint8_t no_rectangles, uint32_t first, uint8_t step) {
-  /* To be completed */
-  printf("%s(0x%03x, %u, 0x%08x, %d): under construction\n", __func__,
-         mode, no_rectangles, first, step);
+ // Construção do frame buffer virtual e físico
+ if (set_frame_buffer(mode) != 0) return 1;
 
-  return 1;
+ // Mudança para o modo gráfico
+ if (set_graphic_mode(mode) != 0) return 1;
+
+ // Cálculo do número inteiro de rectângulos em cada eixo
+ int vertical = mode_info.YResolution / no_rectangles;
+ int horizontal = mode_info.XResolution / no_rectangles;
+
+ for (int i = 0 ; i < no_rectangles ; i++) {
+   for (int j = 0 ; j < no_rectangles ; j++) {
+
+     uint32_t color;
+
+     if (mode_info.MemoryModel == DIRECT_COLOR) {
+       uint32_t R = Red(j, step, first);
+       uint32_t G = Green(i, step, first);
+       uint32_t B = Blue(j, i, step, first);
+       color = direct_mode(R, G, B);
+
+     } else {
+       color = indexed_mode(j, i, step, first, no_rectangles);
+     }
+
+     if (vg_draw_rectangle(j * horizontal, i * vertical, horizontal, vertical, color)) return 1;
+   }
+  }
+  return 0;
 }
 
 int(video_test_xpm)(xpm_map_t xpm, uint16_t x, uint16_t y) {
