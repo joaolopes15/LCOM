@@ -1,14 +1,17 @@
 #ifndef _LCOM_KBC_H_
 #define _LCOM_KBC_H_
 
-#include <minix/sysutil.h>
-#include "i8042.h"
 #include <lcom/lcf.h>
+#include <minix/sysutil.h>
+#include <stdint.h>
 
-int (read_KBC_status)(uint8_t* status);
+extern uint32_t counter_KBC;
 
-int (read_KBC_output)(uint8_t port, uint8_t *output);
+int (read_KBC_status)(uint8_t *st);
 
-int (write_KBC_command)(uint8_t port, uint8_t commandByte);
+int (read_KBC_output)(uint8_t port, uint8_t *output, uint8_t mouse);
 
-#endif /* _LCOM_KBC_H_ */
+int(write_KBC_command)(uint8_t port, uint8_t command);
+
+
+#endif
