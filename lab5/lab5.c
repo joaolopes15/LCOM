@@ -212,13 +212,11 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
     return 1;
   }
   
-  // Draw the initial position
   if (draw_xpm(xpm, xi, yi) != 0) {
     printf("Error drawing xpm\n");
     return 1;
   }
 
-  // Flag to track if we've reached final position
   bool reached_destination = false;
 
   while (scancode != 0x81) {
@@ -237,7 +235,6 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
           if (msg.m_notify.interrupts & irq_set_timer) {
             timer_int_handler();
             
-            // Only update position if not reached destination yet
             if (!reached_destination) {
               if (clear_screen() != 0) {
                 printf("Error clearing screen\n");
@@ -246,15 +243,13 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
               
               if (vertical) {
                 yi += speed;
-                if ((direction > 0 && yi > yf) || (direction < 0 && yi < yf)) {
+                if (yi > yf) {
                   yi = yf;
-                  reached_destination = true;
                 }
               } else {
                 xi += speed;
-                if ((direction > 0 && xi > xf) || (direction < 0 && xi < xf)) {
+                if (xi > xf) {
                   xi = xf;
-                  reached_destination = true;
                 }
               }
               
@@ -273,11 +268,6 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
     }
   }
 
-  if (vg_exit() != 0) {
-    printf("Error exiting video mode\n");
-    return 1;
-  }
-
   if (keyboard_unsubscribe_int() != 0) {
     printf("Error unsubscribing keyboard interrupts\n");
     return 1;
@@ -285,6 +275,11 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
 
   if (timer_unsubscribe_int() != 0) {
     printf("Error unsubscribing timer interrupts\n");
+    return 1;
+  }
+
+  if (vg_exit() != 0) {
+    printf("Error exiting video mode\n");
     return 1;
   }
 
