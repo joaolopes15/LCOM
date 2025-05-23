@@ -111,17 +111,18 @@ int (proj_main_loop)(int argc, char *argv[]) {
     }
   }
 
-  // Clean up resources
-  if (vg_exit() != 0) {
-    printf("Failed to exit video mode\n");
-  }
-
+  
   if (timer_unsubscribe_int() != 0) {
     printf("Failed to unsubscribe timer interrupts\n");
   }
-
+  
   if (keyboard_unsubscribe_int() != 0) {
     printf("Failed to unsubscribe keyboard interrupts\n");
+  }
+  
+  // Clean up resources
+  if (vg_exit() != 0) {
+    printf("Failed to exit video mode\n");
   }
   
   // Free game resources
