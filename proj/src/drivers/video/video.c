@@ -126,7 +126,7 @@ int (vg_draw_rectangle)(uint16_t x, uint16_t y, uint16_t width, uint16_t height,
 
 int (draw_xpm)(xpm_map_t xpm, uint16_t x, uint16_t y) {
   xpm_image_t img;
-  uint8_t *map = xpm_load(xpm, XPM_INDEXED, &img);
+  uint8_t *map = xpm_load(xpm, XPM_8_8_8, &img);
 
   for (unsigned i = 0; i < img.height; i++) {
     for (unsigned j = 0; j < img.width; j++) {
