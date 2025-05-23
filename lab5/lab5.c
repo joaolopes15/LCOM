@@ -202,10 +202,10 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
     return 1;
   }
 
-  if (timer_set_frequency(0, fr_rate) != 0) {
+  /* if (timer_set_frequency(0, fr_rate) != 0) {
     printf("Error setting timer frequency\n");
     return 1;
-  }
+  } */
 
   if (vg_init(0x105) == NULL) {
     printf("Error initializing video mode\n");
@@ -234,6 +234,10 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
           }
           if (msg.m_notify.interrupts & irq_set_timer) {
             timer_int_handler();
+
+            if (((xi == xf) && (yi == yf)) || (counter % (sys_hz() / fr_rate) != 0)) {
+              continue;;
+            }
             
             if (!reached_destination) {
               if (clear_screen() != 0) {
