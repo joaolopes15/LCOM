@@ -1,4 +1,5 @@
 #include "game.h"
+#include "../sprite/sprite.h"
 #include "../assets/test_xpm.h"
 #include "../assets/barra_xpm.h"
 #include <stdlib.h>
@@ -92,7 +93,8 @@ void game_render(game_t* game) {
   switch (game->current_state) {
     case STATE_MENU:
       vg_draw_rectangle(0, 0, 800, 600, 0xFFFFFF);
-      draw_xpm((xpm_map_t)barra_xpm, 0, 0);
+      Sprite *barra = create_sprite((xpm_map_t) barra_xpm);
+      draw_sprite(barra, 100, 100);
       break;
       
     case STATE_PLAYING:
