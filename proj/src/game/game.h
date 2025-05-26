@@ -18,7 +18,6 @@ typedef enum {
 typedef struct {
   game_state_t current_state;   // current state of the game
   game_state_t previous_state;  // previous state of the game
-  uint8_t exit_game;            // flag to exit the game loop
 } game_t;
 
 // initialize the game structure and set initial state

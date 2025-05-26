@@ -1,4 +1,5 @@
 #include "game.h"
+#include "../assets/test_xpm.h"
 #include <stdlib.h>
 
 // initialize the game structure and set initial state
@@ -12,7 +13,6 @@ game_t* game_init() {
   
   game->current_state = STATE_MENU;
   game->previous_state = STATE_MENU;
-  game->exit_game = 0;
   
   return game;
 }
@@ -66,24 +66,15 @@ void game_update(game_t* game) {
   
   switch (game->current_state) {
     case STATE_MENU:
-      // Update menu animations or effects
       break;
       
     case STATE_PLAYING:
-      // Update game logic, physics, etc.
-      
-      // Check for game over condition
-      // if (game_over_condition) {
-      //   game_change_state(game, STATE_GAME_OVER);
-      // }
       break;
       
     case STATE_PAUSED:
-      // No updates in paused state
       break;
       
     case STATE_GAME_OVER:
-      // Update game over screen effects
       break;
       
     case STATE_EXIT:
@@ -99,7 +90,7 @@ void game_render(game_t* game) {
   
   switch (game->current_state) {
     case STATE_MENU:
-      vg_draw_rectangle(0, 0, 800, 600, 0xffffff);
+      draw_xpm((xpm_map_t)test_xpm, 0, 0);
       break;
       
     case STATE_PLAYING:

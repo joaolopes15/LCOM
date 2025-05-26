@@ -128,9 +128,18 @@ int (draw_xpm)(xpm_map_t xpm, uint16_t x, uint16_t y) {
   xpm_image_t img;
   uint8_t *map = xpm_load(xpm, XPM_8_8_8, &img);
 
+  if (map == NULL) {
+    return 1;
+  }
+
   for (unsigned i = 0; i < img.height; i++) {
     for (unsigned j = 0; j < img.width; j++) {
-      uint32_t color = map[i * img.width + j];
+      unsigned pixel_index = (i * img.width + j) * 3;
+      
+      uint32_t color = (map[pixel_index + 2] << 16) |
+                       (map[pixel_index + 1] << 8) |
+                       (map[pixel_index]);
+      
       if (vg_draw_pixel(x + j, y + i, color) != 0) {
         free(map);
         return 1;
@@ -138,6 +147,7 @@ int (draw_xpm)(xpm_map_t xpm, uint16_t x, uint16_t y) {
     }
   }
 
+  free(map);
   return 0;
 }
 
