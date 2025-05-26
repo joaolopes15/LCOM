@@ -15,21 +15,55 @@ game_t* game_init() {
   
   game->current_state = STATE_MENU;
   game->previous_state = STATE_MENU;
+  game->barra = create_sprite((xpm_map_t) barra_xpm);
   
+  game->key_up_pressed = false;
+  game->key_down_pressed = false;
+  game->key_left_pressed = false;
+  game->key_right_pressed = false;
+  
+  if (game->barra == NULL) {
+    printf("Error creating barra sprite\n");
+    free(game);
+    return NULL;
+  }
+  
+  game->barra->x = 100;
+  game->barra->y = 100;
+
   return game;
 }
 
 // process keyboard input according to the current game state
 void game_process_input(game_t* game, uint8_t scancode) {
-  if (game == NULL) return;
+  if (game == NULL || scancode == 0) return;
+  
+  bool is_release = (scancode & 0x80) != 0;
+  uint8_t key_code = scancode & 0x7F;
   
   switch (game->current_state) {
     case STATE_MENU:
-      if (scancode == 0x1C) { // enter key to start game
-        game_change_state(game, STATE_PLAYING);
+      // Handle non-movement keys (only on press, not release)
+      if (!is_release) {
+        if (scancode == 0x1C) { // enter key to start game
+          game_change_state(game, STATE_PLAYING);
+        }
+        else if (scancode == 0x01) { // esc key to exit
+          game_change_state(game, STATE_EXIT);
+        }
       }
-      else if (scancode == 0x01) { // esc key to exit
-        game_change_state(game, STATE_EXIT);
+      
+      if (key_code == 0x50) { // down arrow
+        game->key_down_pressed = !is_release;
+      }
+      else if (key_code == 0x48) { // up arrow
+        game->key_up_pressed = !is_release;
+      }
+      else if (key_code == 0x4B) { // left arrow
+        game->key_left_pressed = !is_release;
+      }
+      else if (key_code == 0x4D) { // right arrow
+        game->key_right_pressed = !is_release;
       }
       break;
       
@@ -68,6 +102,19 @@ void game_update(game_t* game) {
   
   switch (game->current_state) {
     case STATE_MENU:
+      // Handle continuous sprite movement based on key states
+      if (game->key_up_pressed) {
+        move_sprite_up(game->barra);
+      }
+      if (game->key_down_pressed) {
+        move_sprite_down(game->barra);
+      }
+      if (game->key_left_pressed) {
+        move_sprite_left(game->barra);
+      }
+      if (game->key_right_pressed) {
+        move_sprite_right(game->barra);
+      }
       break;
       
     case STATE_PLAYING:
@@ -88,24 +135,24 @@ void game_update(game_t* game) {
 void game_render(game_t* game) {
   if (game == NULL) return;
   
-  clear_screen();
-  
   switch (game->current_state) {
     case STATE_MENU:
-      vg_draw_rectangle(0, 0, 800, 600, 0xFFFFFF);
-      Sprite *barra = create_sprite((xpm_map_t) barra_xpm);
-      draw_sprite(barra, 100, 100);
+      clear_screen();
+      draw_sprite(game->barra, game->barra->x, game->barra->y);
       break;
       
     case STATE_PLAYING:
+      clear_screen();
       vg_draw_rectangle(250, 250, 100, 100, 0x8e3ba6);
       break;
       
     case STATE_PAUSED:
+      clear_screen();
       vg_draw_rectangle(150, 150, 300, 200, 0xffffff);
       break;
       
     case STATE_GAME_OVER:
+      clear_screen();
       vg_draw_rectangle(100, 100, 400, 300, 0x3);
       break;
       
@@ -143,6 +190,10 @@ void game_change_state(game_t* game, game_state_t new_state) {
 // clean up game resources before exiting
 void game_exit(game_t* game) {
   if (game == NULL) return;
+  
+  if (game->barra != NULL) {
+    destroy_sprite(game->barra);
+  }
   
   free(game);
 }

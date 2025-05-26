@@ -18,6 +18,10 @@ Sprite *create_sprite(xpm_map_t xpm) {
 
     sprite->width = img.width;
     sprite->height = img.height;
+    sprite->x = 0;
+    sprite->y = 0;
+    sprite->xspeed = 10;
+    sprite->yspeed = 10;
 
     return sprite;
 }
@@ -46,4 +50,48 @@ int draw_sprite(Sprite *sprite, uint16_t x, uint16_t y) {
     }
   }
   return 0;
+}
+
+int move_sprite_down(Sprite *sprite) {
+    sprite->y += sprite->yspeed;
+
+    if (sprite->y + sprite->height > vmi_p.YResolution) {
+        sprite->y = vmi_p.YResolution - sprite->height;
+        return 1;
+    }
+
+    return 0;
+}
+
+int move_sprite_up(Sprite *sprite) {
+    sprite->y -= sprite->yspeed;
+
+    if (sprite->y < 0) {
+        sprite->y = 0;
+        return 1;
+    }
+
+    return 0;
+}
+
+int move_sprite_left(Sprite *sprite) {
+    sprite->x -= sprite->xspeed;
+
+    if (sprite->x < 0) {
+        sprite->x = 0;
+        return 1;
+    }
+
+    return 0;
+}
+
+int move_sprite_right(Sprite *sprite) {
+    sprite->x += sprite->xspeed;
+
+    if (sprite->x + sprite->width > vmi_p.XResolution) {
+        sprite->x = vmi_p.XResolution - sprite->width;
+        return 1;
+    }
+
+    return 0;
 }
