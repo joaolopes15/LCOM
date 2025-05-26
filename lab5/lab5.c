@@ -181,6 +181,7 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
 
   uint8_t vertical;
   int8_t direction;
+  uint16_t frames_per_pixel = 0;
   
   if (xi == xf && yi != yf) {
     vertical = 1;
@@ -191,6 +192,11 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
   } else {
     return 1;
   }
+  
+  if (speed < 0) {
+    frames_per_pixel = -speed;
+    speed = 1;
+  }
 
   if (keyboard_subscribe_int(&irq_set_kbc) != 0) {
     printf("Error subscribing keyboard interrupts\n");
@@ -199,11 +205,6 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
 
   if (timer_subscribe_int(&irq_set_timer) != 0) {
     printf("Error subscribing timer interrupts\n");
-    return 1;
-  }
-
-  if (timer_set_frequency(0, fr_rate) != 0) {
-    printf("Error setting timer frequency\n");
     return 1;
   }
 
@@ -234,22 +235,40 @@ int(video_test_move)(xpm_map_t xpm, uint16_t xi, uint16_t yi, uint16_t xf, uint1
           }
           if (msg.m_notify.interrupts & irq_set_timer) {
             timer_int_handler();
+
+            if (((xi == xf) && (yi == yf)) || (counter % (sys_hz() / fr_rate) != 0)) {
+              continue;;
+            }
             
             if (!reached_destination) {
-              if (clear_screen() != 0) {
-                printf("Error clearing screen\n");
-                return 1;
+              static uint16_t frame_count = 0;
+              
+              bool should_move = true;
+              if (frames_per_pixel > 0) {
+                frame_count++;
+                if (frame_count < frames_per_pixel) {
+                  should_move = false;
+                } else {
+                  frame_count = 0;
+                }
               }
               
-              if (vertical) {
-                yi += speed;
-                if (yi > yf) {
-                  yi = yf;
+              if (should_move) {
+                if (clear_screen() != 0) {
+                  printf("Error clearing screen\n");
+                  return 1;
                 }
-              } else {
-                xi += speed;
-                if (xi > xf) {
-                  xi = xf;
+                
+                if (vertical) {
+                  yi += speed * direction;
+                  if ((direction > 0 && yi >= yf) || (direction < 0 && yi <= yf)) {
+                    yi = yf;
+                  }
+                } else {
+                  xi += speed * direction;
+                  if ((direction > 0 && xi >= xf) || (direction < 0 && xi <= xf)) {
+                    xi = xf;
+                  }
                 }
               }
               
