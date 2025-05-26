@@ -1,5 +1,6 @@
 #include "game.h"
 #include "../assets/test_xpm.h"
+#include "../assets/logo_xpm.h"
 #include <stdlib.h>
 
 // initialize the game structure and set initial state
@@ -90,7 +91,7 @@ void game_render(game_t* game) {
   
   switch (game->current_state) {
     case STATE_MENU:
-      draw_xpm((xpm_map_t)test_xpm, 0, 0);
+      draw_xpm((xpm_map_t)logo_xpm, 0, 0);
       break;
       
     case STATE_PLAYING:
