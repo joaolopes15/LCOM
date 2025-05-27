@@ -77,28 +77,18 @@ int (proj_main_loop)(int argc, char *argv[]) {
         case HARDWARE:
           if (msg.m_notify.interrupts & irq_set_keyboard) {
             kbc_ih();
-            
-            // Print scancode for debugging
-            printf("Scancode: 0x%02x\n", scancode);
-            
-            // Process input with the received scancode
-            game_process_input(game, scancode);
-            
+
+            if (scancode != 0) {
+              game_process_input(game, scancode);
+            }
           }
           
           if (msg.m_notify.interrupts & irq_set_timer) {
             timer_int_handler();
             
-            // Debug print once per second
-            if (counter % 60 == 0) {
-              printf("State: %d\n", game->current_state);
-            }
-            
-            // Update and render game at each timer tick
             game_update(game);
             game_render(game);
             
-            // Flip the buffers to show the rendered frame
             flip();
           }
           break;
