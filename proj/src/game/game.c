@@ -18,6 +18,8 @@ game_t *game_init() {
 
   game->key_left_pressed = false;
   game->key_right_pressed = false;
+  game->key_up_pressed = false;
+  game->key_down_pressed = false;
 
   return game;
 }
@@ -52,6 +54,12 @@ void game_process_input(game_t *game, uint8_t scancode) {
       }
       else if (key_code == 0x4D) { // right arrow
         game->key_right_pressed = !is_release;
+      }
+      else if (key_code == 0x48) { // up arrow
+        game->key_up_pressed = !is_release;
+      }
+      else if (key_code == 0x50) { // down arrow
+        game->key_down_pressed = !is_release;
       }
       break;
 
@@ -94,6 +102,13 @@ void game_update(game_t *game) {
       if (game->key_right_pressed) {
         move_sprite_right(game->breakout->bar);
       }
+      if (game->key_up_pressed) {
+        move_sprite_up(game->breakout->ball);
+      }
+      if (game->key_down_pressed) {
+        move_sprite_down(game->breakout->ball);
+      }
+      handle_ball_collisions(game->breakout);
       break;
 
     case STATE_PAUSED:

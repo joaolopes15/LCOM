@@ -15,4 +15,6 @@ int draw_breakout(breakout_t *breakout);
 
 void destroy_breakout(breakout_t *breakout);
 
+void handle_ball_collisions(breakout_t *breakout);
+
 #endif

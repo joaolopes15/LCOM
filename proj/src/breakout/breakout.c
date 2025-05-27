@@ -63,3 +63,16 @@ void destroy_breakout(breakout_t *breakout) {
 
   free(breakout);
 }
+
+void handle_ball_collisions(breakout_t *breakout) {
+  if (breakout == NULL || breakout->ball == NULL || breakout->bar == NULL) {
+    return;
+  }
+
+  if (breakout->ball->y + breakout->ball->height >= breakout->bar->y &&
+      breakout->ball->x + breakout->ball->width >= breakout->bar->x &&
+      breakout->ball->x <= breakout->bar->x + breakout->bar->width) {
+    breakout->ball->yspeed = -breakout->ball->yspeed;
+  }
+
+}
