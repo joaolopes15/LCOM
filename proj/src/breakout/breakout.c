@@ -1,5 +1,6 @@
 #include "breakout.h"
 #include "../assets/bar_xpm.h"
+#include "../assets/red_brick_xpm.h"
 #include "../assets/ball_xpm.h"
 
 breakout_t *breakout_init() {
@@ -19,6 +20,18 @@ breakout_t *breakout_init() {
   breakout->bar->x = 350;
   breakout->bar->y = 500;
 
+  for (int i = 0; i < 10; i++) {
+    breakout->bricks[i] = create_sprite((xpm_map_t) red_brick_xpm);
+    if (breakout->bricks[i] == NULL) {
+      destroy_sprite(breakout->bricks[i]);
+      free(breakout);
+      return NULL;
+    }
+
+    breakout->bricks[i]->x = (i * (breakout->bricks[i]->width + 10)) + 20;
+    breakout->bricks[i]->y = 100;
+  }
+
   breakout->ball = create_sprite((xpm_map_t) ball_xpm);
   if (breakout->ball == NULL) {
     destroy_sprite(breakout->ball);
@@ -32,6 +45,15 @@ breakout_t *breakout_init() {
   return breakout;
 }
 
+int draw_bricks(breakout_t *breakout) {
+  for (int i = 0; i < 10; i++) {
+    if (draw_sprite(breakout->bricks[i], breakout->bricks[i]->x, breakout->bricks[i]->y) != 0) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int draw_breakout(breakout_t *breakout) {
   if (breakout == NULL || breakout->bar == NULL || breakout->ball == NULL) {
     return 1;
@@ -40,6 +62,8 @@ int draw_breakout(breakout_t *breakout) {
   if (draw_sprite(breakout->bar, breakout->bar->x, breakout->bar->y) != 0) {
     return 1;
   }
+
+  draw_bricks(breakout);
 
   if (draw_sprite(breakout->ball, breakout->ball->x, breakout->ball->y) != 0) {
     return 1;
@@ -55,6 +79,10 @@ void destroy_breakout(breakout_t *breakout) {
 
   if (breakout->bar != NULL) {
     destroy_sprite(breakout->bar);
+  }
+
+  for (int i = 0; i < 10; i++) {
+    destroy_sprite(breakout->bricks[i]);
   }
 
   if (breakout->ball != NULL) {

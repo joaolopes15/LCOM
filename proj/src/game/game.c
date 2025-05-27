@@ -4,6 +4,7 @@
 #include "../sprite/sprite.h"
 #include <stdlib.h>
 
+// TODO: put all scancodes in a separate header file
 // initialize the game structure and set initial state
 game_t *game_init() {
   game_t *game = (game_t *) malloc(sizeof(game_t));

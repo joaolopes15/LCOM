@@ -7,9 +7,12 @@
 typedef struct {
   Sprite *bar;
   Sprite *ball;
+  Sprite *bricks[10];
 } breakout_t;
 
 breakout_t* breakout_init();
+
+int draw_bricks(breakout_t *breakout);
 
 int draw_breakout(breakout_t *breakout);
 
