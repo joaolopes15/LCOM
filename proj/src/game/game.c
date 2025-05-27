@@ -18,13 +18,6 @@ game_t *game_init() {
 
   game->key_left_pressed = false;
   game->key_right_pressed = false;
-  game->breakout = breakout_init();
-
-  if (game->breakout == NULL) {
-    printf("Error creating breakout game\n");
-    free(game);
-    return NULL;
-  }
 
   return game;
 }
@@ -127,7 +120,7 @@ void game_render(game_t *game) {
 
     case STATE_PLAYING:
       clear_screen();
-      draw_sprite(game->breakout->bar, game->breakout->bar->x, game->breakout->bar->y);
+      draw_breakout(game->breakout);
       break;
 
     case STATE_PAUSED:
@@ -159,6 +152,13 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_PLAYING:
+      if (game->breakout == NULL) {
+        game->breakout = breakout_init();
+        if (game->breakout == NULL) {
+          printf("Error initializing breakout game\n");
+          game_change_state(game, STATE_EXIT);
+        }
+      }
       break;
 
     case STATE_PAUSED:

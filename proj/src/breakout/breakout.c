@@ -19,3 +19,15 @@ breakout_t *breakout_init() {
 
   return breakout;
 }
+
+int draw_breakout(breakout_t *breakout) {
+  if (breakout == NULL || breakout->bar == NULL) {
+    return 1;
+  }
+
+  if (draw_sprite(breakout->bar, breakout->bar->x, breakout->bar->y) != 0) {
+    return 1;
+  }
+  
+  return 0;
+}

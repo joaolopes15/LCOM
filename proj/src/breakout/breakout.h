@@ -10,4 +10,6 @@ typedef struct {
 
 breakout_t* breakout_init();
 
+int draw_breakout(breakout_t *breakout);
+
 #endif
