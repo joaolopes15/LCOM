@@ -15,19 +15,16 @@ game_t *game_init() {
 
   game->current_state = STATE_MENU;
   game->previous_state = STATE_MENU;
-  game->barra = create_sprite((xpm_map_t) bar_xpm);
 
   game->key_left_pressed = false;
   game->key_right_pressed = false;
+  game->breakout = breakout_init();
 
-  if (game->barra == NULL) {
-    printf("Error creating barra sprite\n");
+  if (game->breakout == NULL) {
+    printf("Error creating breakout game\n");
     free(game);
     return NULL;
   }
-
-  game->barra->x = 350;
-  game->barra->y = 500;
 
   return game;
 }
@@ -99,10 +96,10 @@ void game_update(game_t *game) {
 
     case STATE_PLAYING:
       if (game->key_left_pressed) {
-        move_sprite_left(game->barra);
+        move_sprite_left(game->breakout->bar);
       }
       if (game->key_right_pressed) {
-        move_sprite_right(game->barra);
+        move_sprite_right(game->breakout->bar);
       }
       break;
 
@@ -130,7 +127,7 @@ void game_render(game_t *game) {
 
     case STATE_PLAYING:
       clear_screen();
-      draw_sprite(game->barra, game->barra->x, game->barra->y);
+      draw_sprite(game->breakout->bar, game->breakout->bar->x, game->breakout->bar->y);
       break;
 
     case STATE_PAUSED:
@@ -180,8 +177,8 @@ void game_exit(game_t *game) {
   if (game == NULL)
     return;
 
-  if (game->barra != NULL) {
-    destroy_sprite(game->barra);
+  if (game->breakout->bar != NULL) {
+    destroy_sprite(game->breakout->bar);
   }
 
   free(game);

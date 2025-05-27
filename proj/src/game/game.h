@@ -4,7 +4,7 @@
 #include <lcom/lcf.h>
 #include "../drivers/video/video.h"
 #include "../drivers/keyboard/keyboard.h"
-#include "../sprite/sprite.h"
+#include "../breakout/breakout.h"
 
 // enum of all possible game states
 typedef enum {
@@ -19,7 +19,7 @@ typedef enum {
 typedef struct {
   game_state_t current_state;   // current state of the game
   game_state_t previous_state;  // previous state of the game
-  Sprite* barra;
+  breakout_t* breakout;
   
   bool key_left_pressed;
   bool key_right_pressed;
