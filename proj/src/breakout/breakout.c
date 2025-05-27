@@ -28,6 +28,18 @@ int draw_breakout(breakout_t *breakout) {
   if (draw_sprite(breakout->bar, breakout->bar->x, breakout->bar->y) != 0) {
     return 1;
   }
-  
+
   return 0;
+}
+
+void destroy_breakout(breakout_t *breakout) {
+  if (breakout == NULL) {
+    return;
+  }
+
+  if (breakout->bar != NULL) {
+    destroy_sprite(breakout->bar);
+  }
+
+  free(breakout);
 }

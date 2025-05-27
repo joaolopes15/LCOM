@@ -149,6 +149,10 @@ void game_change_state(game_t *game, game_state_t new_state) {
 
   switch (new_state) {
     case STATE_MENU:
+      if (game->breakout != NULL) {
+        destroy_breakout(game->breakout);
+        game->breakout = NULL;
+      }
       break;
 
     case STATE_PLAYING:
@@ -176,10 +180,6 @@ void game_change_state(game_t *game, game_state_t new_state) {
 void game_exit(game_t *game) {
   if (game == NULL)
     return;
-
-  if (game->breakout->bar != NULL) {
-    destroy_sprite(game->breakout->bar);
-  }
 
   free(game);
 }
