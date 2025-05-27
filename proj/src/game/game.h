@@ -20,9 +20,7 @@ typedef struct {
   game_state_t current_state;   // current state of the game
   game_state_t previous_state;  // previous state of the game
   Sprite* barra;
-
-  bool key_up_pressed;
-  bool key_down_pressed;
+  
   bool key_left_pressed;
   bool key_right_pressed;
 } game_t;
