@@ -108,6 +108,8 @@ void game_update(game_t *game) {
       if (game->key_down_pressed) {
         move_sprite_down(game->breakout->ball);
       }
+      game->breakout->ball->x += game->breakout->ball->xspeed;
+      game->breakout->ball->y += game->breakout->ball->yspeed;
       handle_ball_collisions(game->breakout);
       break;
 

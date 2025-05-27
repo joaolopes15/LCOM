@@ -78,6 +78,8 @@ void handle_ball_collisions(breakout_t *breakout) {
   if (breakout->ball->y + breakout->ball->height >= vmi_p.YResolution) {
     breakout->ball->x = 395;
     breakout->ball->y = 490;
+    breakout->ball->xspeed = 3;
+    breakout->ball->yspeed = -3;
   }
 
   if (breakout->ball->y + breakout->ball->height >= breakout->bar->y &&
