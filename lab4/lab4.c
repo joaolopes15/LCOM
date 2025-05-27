@@ -4,7 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-// Any header files included below this line should have been created by you
+#include "mouse.h"
+#include "i8042.h"
+
+extern struct packet m_packet;
 
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -32,11 +35,21 @@ int main(int argc, char *argv[]) {
 
 
 int (mouse_test_packet)(uint32_t cnt) {
-    /* To be completed */
-    printf("%s(%u): under construction\n", __func__, cnt);
-    return 1;
-}
 
+  uint8_t m_irq_set; // variable to store the IRQ set for the mouse
+
+  if (mouse_subscribe_int(&m_irq_set) != 0) return 1; 
+
+  void mouse_ih(void); 
+  
+  mouse_enable_data_reporting();
+
+  void mouse_print_packet(struct packet *m_packet);
+
+  if (mouse_unsubscribe_int(&m_irq_set) != 0) return 1; 
+
+  return 0;
+}
 int (mouse_test_async)(uint8_t idle_time) {
     /* To be completed */
     printf("%s(%u): under construction\n", __func__, idle_time);
