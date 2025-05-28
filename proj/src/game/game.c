@@ -2,29 +2,11 @@
 #include "../assets/bar_xpm.h"
 #include "../assets/test_xpm.h"
 #include "../assets/logo_xpm.h"
-#include "../assets/menus/welcome_xpm.h" 
-#include "../assets/menus/exit_xpm.h"
-#include "../assets/menus/startS_xpm.h"
-#include "../assets/menus/startgame_xpm.h"
-#include "../assets/menus/howtoplayS_xpm.h"
-#include "../assets/menus/howtoplay_xpm.h"
-#include "../assets/menus/to_xpm.h"
-#include "../assets/menus/paused_xpm.h"
-#include "../assets/menus/exittomenuS_xpm.h"
-#include "../assets/menus/exittomenu_xpm.h"
-#include "../assets/menus/continueS_xpm.h"
-#include "../assets/menus/continue_xpm.h"
-#include "../assets/menus/exitS_xpm.h"
-#include "../assets/menus/retry_xpm.h"
-#include "../assets/menus/retryS_xpm.h"
-#include "../assets/menus/gameover_xpm.h"
-#include "../assets/menus/highscore_xpm.h"
-#include "../assets/menus/instructions/menuinstructions_xpm.h"
-#include "../assets/menus/instructions/pressanykey_xpm.h"
-#include "../assets/menus/instructions/instruction_xpm.h"
-#include "../assets/menus/instructions/gameplayinstruction_xpm.h"
-#include "../assets/menus/background_xpm.h"
 #include "../sprite/sprite.h"
+#include "../menus/mainmenu.h"
+#include "../menus/pausemenu.h"
+#include "../menus/gameovermenu.h"
+#include "../menus/instructionmenu.h"
 #include <stdlib.h>
 
 // initialize the game structure and set initial state
@@ -69,30 +51,6 @@ void game_process_input(game_t *game, uint8_t scancode) {
   uint8_t key_code = scancode & 0x7F;
 
   switch (game->current_state) {
-    case STATE_MENU:
-      // Handle non-movement keys (only on press, not release)
-      if (!is_release) {
-        if (scancode == 0x1C) { // enter key
-          if (game->main_menu_selected_option == 0) { // Start Game
-            game_change_state(game, STATE_PLAYING);
-          } else if (game->main_menu_selected_option == 2) { // Exit
-            game_change_state(game, STATE_EXIT);
-          }
-            else if (game->main_menu_selected_option == 1) { // How to Play
-            game_change_state(game, STATE_HOW_TO_PLAY);
-            }
-        }
-        else if (scancode == 0x01) { // esc key to exit
-          game_change_state(game, STATE_EXIT);
-        }
-        else if (key_code == 0x48) { // up arrow
-          if (game->main_menu_selected_option > 0) game->main_menu_selected_option--;
-        }
-        else if (key_code == 0x50) { // down arrow
-          if (game->main_menu_selected_option < 2) game->main_menu_selected_option++;
-        }
-      }
-      break;
 
     case STATE_PLAYING:
       if (scancode == 0x01) { // esc key to pause
@@ -108,65 +66,18 @@ void game_process_input(game_t *game, uint8_t scancode) {
         game_change_state(game, STATE_GAME_OVER);
       }
       break;
-
-    case STATE_PAUSED:
-      // Handle non-movement keys (only on press, not release)
-      if (!is_release) {
-        if (scancode == 0x1C) { // enter key
-          if (game->pause_menu_selected_option == 0) { // Continue
-            game_change_state(game, STATE_PLAYING);
-          }
-          else if (game->pause_menu_selected_option == 1) { // Retry
-            game_change_state(game, STATE_PLAYING);
-            // Reset game state if needed, e.g., reset score, lives, etc.
-            game->barra->x = 350; // Reset barra position
-            game->barra->y = 500; // Reset barra position
-          }
-          else if (game->pause_menu_selected_option == 2) { // Exit to menu
-            game_change_state(game, STATE_MENU);
-          }
-        }
-        else if (key_code == 0x48) { // up arrow
-          if (game->pause_menu_selected_option > 0) game->pause_menu_selected_option--;
-        }
-        else if (key_code == 0x50) { // down arrow
-          if (game->pause_menu_selected_option < 2) game->pause_menu_selected_option++;
-        }
-      }
-      break;
-
-    case STATE_GAME_OVER:
-      if (!is_release) {
-        if (scancode == 0x1C) { // enter key
-          if (game->game_over_selected_option == 0) { // Retry
-            game_change_state(game, STATE_PLAYING);
-            // Reset game state if needed, e.g., reset score, lives, etc.
-            game->barra->x = 350; // Reset barra position
-            game->barra->y = 500; // Reset barra position;
-          }
-          else if (game->game_over_selected_option == 1) { // Exit to menu
-            game_change_state(game, STATE_MENU);  
-
-          }
-          else if (game->game_over_selected_option == 2) { // Exit
-            game_change_state(game, STATE_EXIT);
-          }
-        }
-        else if (key_code == 0x48) { // up arrow
-          if (game->game_over_selected_option > 0) game->game_over_selected_option--;
-        }
-        else if (key_code == 0x50) { // down arrow
-          if (game->game_over_selected_option < 2) game->game_over_selected_option++;
-        }
-      }
-      break;
-
-    case STATE_HOW_TO_PLAY:
-      // Any key press returns to menu
-      if (!is_release) {
-        game_change_state(game, STATE_MENU);
-      }
-      break;
+        case STATE_MENU:
+            mainmenu_process_input(game, scancode);
+            break;
+        case STATE_PAUSED:
+            pausemenu_process_input(game, scancode);
+            break;
+        case STATE_GAME_OVER:
+            gameovermenu_process_input(game, scancode);
+            break;
+        case STATE_HOW_TO_PLAY:
+            instructionmenu_process_input(game, scancode);
+            break;
 
     case STATE_EXIT:
       break;
@@ -211,77 +122,23 @@ void game_render(game_t *game) {
     return;
 
   switch (game->current_state) {
-    case STATE_MENU:
-      clear_screen();
-      draw_xpm((xpm_map_t) background_xpm, 0, 0);
-      draw_xpm((xpm_map_t) welcome_xpm , 200, 0);
-      draw_xpm((xpm_map_t) to_xpm, 450, 0);
-      draw_xpm((xpm_map_t) logo_xpm, 270, 100);
-      // Draw menu options, highlight selected
-      if (game->main_menu_selected_option == 0)
-        draw_xpm((xpm_map_t) startS_xpm, 250, 300);
-      else
-        draw_xpm((xpm_map_t) startgame_xpm, 250, 300);
-      if (game->main_menu_selected_option == 1)
-        draw_xpm((xpm_map_t) howtoplayS_xpm, 250, 400);
-      else
-        draw_xpm((xpm_map_t) howtoplay_xpm, 250, 400);
-      if (game->main_menu_selected_option == 2)
-        draw_xpm((xpm_map_t) exitS_xpm, 230, 500);
-      else
-        draw_xpm((xpm_map_t) exit_xpm, 250, 500);
-      break;
+            case STATE_MENU:
+            mainmenu_render(game);
+            break;
+        case STATE_PAUSED:
+            pausemenu_render(game);
+            break;
+        case STATE_GAME_OVER:
+            gameovermenu_render(game);
+            break;
+        case STATE_HOW_TO_PLAY:
+            instructionmenu_render(game);
+            break;
 
     case STATE_PLAYING:
       clear_screen();
       draw_sprite(game->barra, game->barra->x, game->barra->y);
       break;
-
-    case STATE_PAUSED:
-      clear_screen();
-      draw_xpm((xpm_map_t) paused_xpm, 250, 100);
-      if(game->pause_menu_selected_option == 0)
-        draw_xpm((xpm_map_t) continueS_xpm, 250, 200);
-      else{
-        draw_xpm((xpm_map_t) continue_xpm, 250, 200);
-      }
-      if(game->pause_menu_selected_option == 1)
-        draw_xpm((xpm_map_t) retryS_xpm, 250, 300);
-      else{
-        draw_xpm((xpm_map_t) retry_xpm, 250, 300);
-      }
-      if(game->pause_menu_selected_option == 2)
-        draw_xpm((xpm_map_t) exittomenuS_xpm, 250, 400);
-      else{
-        draw_xpm((xpm_map_t) exittomenu_xpm, 250, 400);
-      }
-      break;
-
-    case STATE_GAME_OVER:
-      clear_screen();
-      draw_xpm((xpm_map_t) gameover_xpm, 250, 100);
-      draw_xpm((xpm_map_t) highscore_xpm, 250, 200);
-      if (game->game_over_selected_option == 0)
-        draw_xpm((xpm_map_t) retryS_xpm, 250, 300);
-      else
-        draw_xpm((xpm_map_t) retry_xpm, 250, 300);
-      if (game->game_over_selected_option == 1)
-        draw_xpm((xpm_map_t) exittomenuS_xpm, 250, 400);
-      else
-        draw_xpm((xpm_map_t) exittomenu_xpm, 250, 400);
-      if(game->game_over_selected_option == 2)
-        draw_xpm((xpm_map_t) exitS_xpm, 250, 500);
-      else
-        draw_xpm((xpm_map_t) exit_xpm, 250, 500);
-
-      break;
-
-      case STATE_HOW_TO_PLAY:
-      clear_screen();
-      draw_xpm((xpm_map_t) instruction_xpm, 250, 0);
-      draw_xpm((xpm_map_t) gameplayinstruction_xpm, 100, 200);
-      //draw_xpm((xpm_map_t) menuinstructions_xpm, 250, 400);
-      //draw_xpm((xpm_map_t) pressanykey_xpm, 250, 500);
     case STATE_EXIT:
       break;
   }
@@ -328,3 +185,4 @@ void game_exit(game_t *game) {
 
   free(game);
 }
+
