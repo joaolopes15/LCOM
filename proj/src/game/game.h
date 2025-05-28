@@ -4,6 +4,7 @@
 #include <lcom/lcf.h>
 #include "../drivers/video/video.h"
 #include "../drivers/keyboard/keyboard.h"
+#include "../drivers/mouse/mouse.h"
 #include "../sprite/sprite.h"
 
 // enum of all possible game states
