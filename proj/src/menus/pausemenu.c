@@ -33,20 +33,36 @@ void pausemenu_process_input(game_t *game, uint8_t scancode) {
 
 void pausemenu_render(game_t *game) {
     clear_screen();
-    draw_xpm((xpm_map_t) paused_xpm, 250, 100);
+    Sprite *paused_sprite = create_sprite((xpm_map_t) paused_xpm);
+    Sprite *continueS_sprite = create_sprite((xpm_map_t) continueS_xpm);
+    Sprite *continue_sprite = create_sprite((xpm_map_t) continue_xpm);
+    Sprite *retryS_sprite = create_sprite((xpm_map_t) retryS_xpm);
+    Sprite *retry_sprite = create_sprite((xpm_map_t) retry_xpm);
+    Sprite *exittomenuS_sprite = create_sprite((xpm_map_t) exittomenuS_xpm);
+    Sprite *exittomenu_sprite = create_sprite((xpm_map_t) exittomenu_xpm);
+    
+    draw_sprite(paused_sprite, 250, 100);
     
     if (game->pause_menu_selected_option == 0)
-        draw_xpm((xpm_map_t) continueS_xpm, 250, 200);
+        draw_sprite(continueS_sprite, 250, 200);
     else
-        draw_xpm((xpm_map_t) continue_xpm, 250, 200);
+        draw_sprite(continue_sprite, 250, 200);
     
     if (game->pause_menu_selected_option == 1)
-        draw_xpm((xpm_map_t) retryS_xpm, 250, 300);
+        draw_sprite(retryS_sprite, 250, 300);
     else
-        draw_xpm((xpm_map_t) retry_xpm, 250, 300);
+        draw_sprite(retry_sprite, 250, 300);
     
     if (game->pause_menu_selected_option == 2)
-        draw_xpm((xpm_map_t) exittomenuS_xpm, 250, 400);
+        draw_sprite(exittomenuS_sprite, 250, 400);
     else
-        draw_xpm((xpm_map_t) exittomenu_xpm, 250, 400);
+        draw_sprite(exittomenu_sprite, 250, 400);
+    
+    destroy_sprite(paused_sprite);
+    destroy_sprite(continueS_sprite);
+    destroy_sprite(continue_sprite);
+    destroy_sprite(retryS_sprite);
+    destroy_sprite(retry_sprite);
+    destroy_sprite(exittomenuS_sprite);
+    destroy_sprite(exittomenu_sprite);
 }

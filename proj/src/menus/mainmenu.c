@@ -36,23 +36,40 @@ void mainmenu_process_input(game_t *game, uint8_t scancode) {
 
 void mainmenu_render(game_t *game) {
     clear_screen();
-    draw_xpm((xpm_map_t) background_xpm, 0, 0);
-    draw_xpm((xpm_map_t) welcome_xpm, 200, 0);
-    draw_xpm((xpm_map_t) to_xpm, 450, 0);
-    draw_xpm((xpm_map_t) logo_xpm, 270, 100);
-    
+    Sprite *background_sprite = create_sprite((xpm_map_t) background_xpm);
+    Sprite *welcome_sprite = create_sprite((xpm_map_t) welcome_xpm);
+    Sprite *to_sprite = create_sprite((xpm_map_t) to_xpm);
+    Sprite *logo_sprite = create_sprite((xpm_map_t) logo_xpm);
+    Sprite *startS_sprite = create_sprite((xpm_map_t) startS_xpm);
+    Sprite *startgame_sprite = create_sprite((xpm_map_t) startgame_xpm);
+    Sprite *howtoplayS_sprite = create_sprite((xpm_map_t) howtoplayS_xpm);
+    Sprite *howtoplay_sprite = create_sprite((xpm_map_t) howtoplay_xpm);
+    Sprite *exitS_sprite = create_sprite((xpm_map_t) exitS_xpm);
+    Sprite *exit_sprite = create_sprite((xpm_map_t) exit_xpm);
+    draw_sprite(background_sprite, 0, 0);
+    draw_sprite(welcome_sprite, 200, 0);
+    draw_sprite(to_sprite, 450, 0);
+    draw_sprite(logo_sprite, 270, 100);
     if (game->main_menu_selected_option == 0)
-        draw_xpm((xpm_map_t) startS_xpm, 250, 300);
+        draw_sprite(startS_sprite, 250, 300);
     else
-        draw_xpm((xpm_map_t) startgame_xpm, 250, 300);
-    
+        draw_sprite(startgame_sprite, 250, 300);
     if (game->main_menu_selected_option == 1)
-        draw_xpm((xpm_map_t) howtoplayS_xpm, 250, 400);
+        draw_sprite(howtoplayS_sprite, 250, 400);
     else
-        draw_xpm((xpm_map_t) howtoplay_xpm, 250, 400);
-    
+        draw_sprite(howtoplay_sprite, 250, 400);
     if (game->main_menu_selected_option == 2)
-        draw_xpm((xpm_map_t) exitS_xpm, 230, 500);
+        draw_sprite(exitS_sprite, 230, 500);
     else
-        draw_xpm((xpm_map_t) exit_xpm, 250, 500);
+        draw_sprite(exit_sprite, 250, 500);
+    destroy_sprite(background_sprite);
+    destroy_sprite(welcome_sprite);
+    destroy_sprite(to_sprite);
+    destroy_sprite(logo_sprite);
+    destroy_sprite(startS_sprite);
+    destroy_sprite(startgame_sprite);
+    destroy_sprite(howtoplayS_sprite);
+    destroy_sprite(howtoplay_sprite);
+    destroy_sprite(exitS_sprite);
+    destroy_sprite(exit_sprite);
 }

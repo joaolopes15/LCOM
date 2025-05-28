@@ -16,9 +16,11 @@ void instructionmenu_process_input(game_t *game, uint8_t scancode) {
 
 void instructionmenu_render(game_t *game) {
     clear_screen();
-    draw_xpm((xpm_map_t) instruction_xpm, 250, 0);
-    draw_xpm((xpm_map_t) gameplayinstruction_xpm, 100, 200);
-    // Uncomment if you want these additional elements:
-    // draw_xpm((xpm_map_t) menuinstructions_xpm, 250, 400);
-    // draw_xpm((xpm_map_t) pressanykey_xpm, 250, 500);
+    Sprite *instruction_sprite = create_sprite((xpm_map_t) instruction_xpm);
+    Sprite *gameplay_instruction_sprite = create_sprite((xpm_map_t) gameplayinstruction_xpm);
+    draw_sprite(instruction_sprite, 250, 0);
+    draw_sprite(gameplay_instruction_sprite, 100, 200);
+    destroy_sprite(instruction_sprite);
+    destroy_sprite(gameplay_instruction_sprite);
+
 }
