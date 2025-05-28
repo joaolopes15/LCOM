@@ -24,6 +24,12 @@ typedef struct {
   
   bool key_left_pressed;
   bool key_right_pressed;
+  
+  int mouse_x;
+  int mouse_y; 
+  int mouse_target_x; // target X position for mouse-controlled movement
+  bool mouse_control_active; // whether mouse control is currently active
+
 } game_t;
 
 // initialize the game structure and set initial state
@@ -31,6 +37,9 @@ game_t* game_init();
 
 // process keyboard input according to the current game state
 void game_process_input(game_t* game, uint8_t scancode);
+
+// process mouse input according to the current game state
+void game_process_mouse_input(game_t* game, struct packet* mouse_packet);
 
 // update the game logic based on the current state
 void game_update(game_t* game);

@@ -71,6 +71,15 @@ int (proj_main_loop)(int argc, char *argv[]) {
     return 1;
   }
 
+  // Enable mouse data reporting
+  if (m_write(ENABLE_DATA_REPORTING) != 0) {
+    keyboard_unsubscribe_int();
+    timer_unsubscribe_int();
+    mouse_unsubscribe_int();
+    game_exit(game);
+    return 1;
+  }
+
   if (vg_init(0x115) == NULL) {
     keyboard_unsubscribe_int();
     timer_unsubscribe_int();
@@ -109,7 +118,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
             packet_assembly();
             if (byte_idx == 3) {
               m_assemble_packet();
-              game_process_input(game, m_packet.bytes[0]);
+              game_process_mouse_input(game, &m_packet);
               byte_idx = 0; // Reset byte index after processing
             }
           }

@@ -19,6 +19,11 @@ game_t *game_init() {
 
   game->key_left_pressed = false;
   game->key_right_pressed = false;
+  
+  game->mouse_x = 400; 
+  game->mouse_y = 300;
+  game->mouse_target_x = 350; // Initialize to same position as bar
+  game->mouse_control_active = false;
 
   if (game->barra == NULL) {
     printf("Error creating barra sprite\n");
@@ -88,6 +93,46 @@ void game_process_input(game_t *game, uint8_t scancode) {
   }
 }
 
+// process mouse input according to the current game state
+void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
+  if (game == NULL || mouse_packet == NULL)
+    return;
+
+  // Update mouse position
+  game->mouse_x += mouse_packet->delta_x;
+  game->mouse_y += mouse_packet->delta_y;
+
+  // Clamp mouse position to screen bounds
+  if (game->mouse_x < 0) game->mouse_x = 0;
+  if (game->mouse_x > vmi_p.XResolution) game->mouse_x = vmi_p.XResolution;
+  if (game->mouse_y < 0) game->mouse_y = 0;
+  if (game->mouse_y > vmi_p.YResolution) game->mouse_y = vmi_p.YResolution;
+
+  switch (game->current_state) {
+    case STATE_PLAYING:
+      // Set target position for bar sprite to follow mouse X position
+      // Center the bar on the mouse X position
+      game->mouse_target_x = game->mouse_x - game->barra->width / 2;
+      
+      // Clamp target position to screen bounds
+      if (game->mouse_target_x < 0) 
+        game->mouse_target_x = 0;
+      if (game->mouse_target_x + game->barra->width > vmi_p.XResolution) 
+        game->mouse_target_x = vmi_p.XResolution - game->barra->width;
+      
+      game->mouse_control_active = true;
+      break;
+    
+    case STATE_MENU:
+    case STATE_PAUSED:
+    case STATE_GAME_OVER:
+    case STATE_EXIT:
+      // Mouse input ignored in these states
+      game->mouse_control_active = false;
+      break;
+  }
+}
+
 // update the game logic based on the current state
 void game_update(game_t *game) {
   if (game == NULL)
@@ -100,9 +145,15 @@ void game_update(game_t *game) {
     case STATE_PLAYING:
       if (game->key_left_pressed) {
         move_sprite_left(game->barra);
+        game->mouse_control_active = false; // Disable mouse control when using keyboard
       }
-      if (game->key_right_pressed) {
+      else if (game->key_right_pressed) {
         move_sprite_right(game->barra);
+        game->mouse_control_active = false; // Disable mouse control when using keyboard
+      }
+      else if (game->mouse_control_active) {
+        // Only move towards mouse target if no keyboard input is active
+        move_sprite_towards(game->barra, game->mouse_target_x, game->barra->y);
       }
       break;
 
