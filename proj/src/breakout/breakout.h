@@ -7,7 +7,7 @@
 typedef struct {
   Sprite *bar;
   Sprite *ball;
-  Sprite *bricks[23];
+  Sprite *bricks[35];
 } breakout_t;
 
 breakout_t* breakout_init();
