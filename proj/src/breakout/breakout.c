@@ -1,11 +1,11 @@
 #include "breakout.h"
 #include "../assets/ball_xpm.h"
 #include "../assets/bar_xpm.h"
-#include "../assets/red_brick_xpm.h"
-#include "../assets/orange_brick_xpm.h"
-#include "../assets/yellow_brick_xpm.h"
-#include "../assets/green_brick_xpm.h"
 #include "../assets/blue_brick_xpm.h"
+#include "../assets/green_brick_xpm.h"
+#include "../assets/orange_brick_xpm.h"
+#include "../assets/red_brick_xpm.h"
+#include "../assets/yellow_brick_xpm.h"
 
 breakout_t *breakout_init() {
   breakout_t *breakout = (breakout_t *) malloc(sizeof(breakout_t));
@@ -24,12 +24,31 @@ breakout_t *breakout_init() {
   breakout->bar->x = 350;
   breakout->bar->y = 500;
 
+  breakout->ball = create_sprite((xpm_map_t) ball_xpm);
+
+  create_bricks(breakout);
+
+  if (breakout->ball == NULL) {
+    destroy_sprite(breakout->ball);
+    free(breakout);
+    return NULL;
+  }
+
+  breakout->ball->x = 395;
+  breakout->ball->y = 490;
+  breakout->ball->xspeed = 0;
+  breakout->ball->yspeed = 0;
+
+  return breakout;
+}
+
+void create_bricks(breakout_t *breakout) {
   for (int i = 0; i < 12; i++) {
     breakout->bricks[i] = create_sprite((xpm_map_t) red_brick_xpm);
     if (breakout->bricks[i] == NULL) {
       destroy_sprite(breakout->bricks[i]);
       free(breakout);
-      return NULL;
+      return;
     }
 
     int total_width = 12 * breakout->bricks[i]->width + 9 * 12;
@@ -43,7 +62,7 @@ breakout_t *breakout_init() {
     if (breakout->bricks[i] == NULL) {
       destroy_sprite(breakout->bricks[i]);
       free(breakout);
-      return NULL;
+      return;
     }
 
     int total_width = 12 * breakout->bricks[i]->width + 9 * 12;
@@ -57,7 +76,7 @@ breakout_t *breakout_init() {
     if (breakout->bricks[i] == NULL) {
       destroy_sprite(breakout->bricks[i]);
       free(breakout);
-      return NULL;
+      return;
     }
 
     int total_width = 12 * breakout->bricks[i]->width + 9 * 12;
@@ -71,7 +90,7 @@ breakout_t *breakout_init() {
     if (breakout->bricks[i] == NULL) {
       destroy_sprite(breakout->bricks[i]);
       free(breakout);
-      return NULL;
+      return;
     }
 
     int total_width = 12 * breakout->bricks[i]->width + 9 * 12;
@@ -85,7 +104,7 @@ breakout_t *breakout_init() {
     if (breakout->bricks[i] == NULL) {
       destroy_sprite(breakout->bricks[i]);
       free(breakout);
-      return NULL;
+      return;
     }
 
     int total_width = 12 * breakout->bricks[i]->width + 9 * 12;
@@ -97,20 +116,6 @@ breakout_t *breakout_init() {
   for (int i = 0; i < 60; i++) {
     breakout->active_bricks[i] = true;
   }
-
-  breakout->ball = create_sprite((xpm_map_t) ball_xpm);
-  if (breakout->ball == NULL) {
-    destroy_sprite(breakout->ball);
-    free(breakout);
-    return NULL;
-  }
-
-  breakout->ball->x = 395;
-  breakout->ball->y = 490;
-  breakout->ball->xspeed = 3;
-  breakout->ball->yspeed = -3;
-
-  return breakout;
 }
 
 int draw_bricks(breakout_t *breakout) {
@@ -135,6 +140,24 @@ int draw_breakout(breakout_t *breakout) {
 
   if (draw_sprite(breakout->ball, breakout->ball->x, breakout->ball->y) != 0) {
     return 1;
+  }
+
+  int count = 0;
+
+  for (int i = 0; i < 60; i++) {
+    if (breakout->active_bricks[i] == false) {
+      count++;
+    }
+  }
+
+  if (count == 60) {
+    create_bricks(breakout);
+    draw_bricks(breakout);
+
+    breakout->ball->x = 395;
+    breakout->ball->y = 490;
+    breakout->ball->xspeed = 0;
+    breakout->ball->yspeed = 0;
   }
 
   return 0;
@@ -184,16 +207,18 @@ void handle_ball_collisions(breakout_t *breakout) {
       breakout->ball->y <= breakout->bar->y + breakout->bar->height &&
       breakout->ball->x + breakout->ball->width >= breakout->bar->x &&
       breakout->ball->x <= breakout->bar->x + breakout->bar->width) {
-        if (breakout->ball->y + breakout->ball->height - breakout->ball->yspeed <= breakout->bar->y || breakout->ball->y - breakout->ball->yspeed >= breakout->bar->y + breakout->bar->height) {
-          breakout->ball->yspeed = -breakout->ball->yspeed;
-        } else {
-          breakout->ball->xspeed = -breakout->ball->xspeed;
-        }
+    if (breakout->ball->y + breakout->ball->height - breakout->ball->yspeed <= breakout->bar->y || breakout->ball->y - breakout->ball->yspeed >= breakout->bar->y + breakout->bar->height) {
+      breakout->ball->yspeed = -breakout->ball->yspeed;
+    }
+    else {
+      breakout->ball->xspeed = -breakout->ball->xspeed;
+    }
   }
 
   for (int i = 0; i < 60; i++) {
-    if (!breakout->active_bricks[i]) continue;
-    
+    if (!breakout->active_bricks[i])
+      continue;
+
     if (breakout->ball->y <= breakout->bricks[i]->y + breakout->bricks[i]->height &&
         breakout->ball->y + breakout->ball->height >= breakout->bricks[i]->y &&
         breakout->ball->x + breakout->ball->width >= breakout->bricks[i]->x &&
@@ -201,7 +226,8 @@ void handle_ball_collisions(breakout_t *breakout) {
       if (breakout->ball->y + breakout->ball->height - breakout->ball->yspeed <= breakout->bricks[i]->y ||
           breakout->ball->y - breakout->ball->yspeed >= breakout->bricks[i]->y + breakout->bricks[i]->height) {
         breakout->ball->yspeed = -breakout->ball->yspeed;
-      } else {
+      }
+      else {
         breakout->ball->xspeed = -breakout->ball->xspeed;
       }
       breakout->active_bricks[i] = false;

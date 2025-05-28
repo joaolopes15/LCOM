@@ -18,6 +18,7 @@ game_t *game_init() {
   game->key_right_pressed = false;
   game->key_up_pressed = false;
   game->key_down_pressed = false;
+  game->key_space_pressed = false;
 
   return game;
 }
@@ -58,6 +59,9 @@ void game_process_input(game_t *game, uint8_t scancode) {
       }
       else if (key_code == 0x50) { // down arrow
         game->key_down_pressed = !is_release;
+      }
+      else if (key_code == 0x39) {
+        game->key_space_pressed =!is_release;
       }
       break;
 
@@ -105,6 +109,10 @@ void game_update(game_t *game) {
       }
       if (game->key_down_pressed) {
         move_sprite_down(game->breakout->ball);
+      }
+      if (game->key_space_pressed) {
+        game->breakout->ball->xspeed = 0;
+        game->breakout->ball->yspeed = -3;
       }
       game->breakout->ball->x += game->breakout->ball->xspeed;
       game->breakout->ball->y += game->breakout->ball->yspeed;

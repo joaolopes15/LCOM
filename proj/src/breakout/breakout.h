@@ -13,6 +13,8 @@ typedef struct {
 
 breakout_t* breakout_init();
 
+void create_bricks(breakout_t *breakout);
+
 int draw_bricks(breakout_t *breakout);
 
 int draw_breakout(breakout_t *breakout);

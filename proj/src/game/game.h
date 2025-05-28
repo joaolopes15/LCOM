@@ -24,6 +24,7 @@ typedef struct {
   bool key_right_pressed;
   bool key_up_pressed;
   bool key_down_pressed;
+  bool key_space_pressed;
 } game_t;
 
 // initialize the game structure and set initial state
