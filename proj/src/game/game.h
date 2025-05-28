@@ -18,7 +18,6 @@ typedef enum {
 // game structure that holds all game-related information
 typedef struct {
   game_state_t current_state;   // current state of the game
-  game_state_t previous_state;  // previous state of the game
   breakout_t* breakout;
   
   bool key_left_pressed;

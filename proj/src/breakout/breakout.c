@@ -1,10 +1,10 @@
 #include "breakout.h"
+#include "../assets/ball_xpm.h"
 #include "../assets/bar_xpm.h"
 #include "../assets/red_brick_xpm.h"
-#include "../assets/ball_xpm.h"
 
 breakout_t *breakout_init() {
-  breakout_t *breakout = (breakout_t *)malloc(sizeof(breakout_t));
+  breakout_t *breakout = (breakout_t *) malloc(sizeof(breakout_t));
 
   if (breakout == NULL) {
     return NULL;
@@ -41,6 +41,8 @@ breakout_t *breakout_init() {
 
   breakout->ball->x = 395;
   breakout->ball->y = 490;
+  breakout->ball->xspeed = 3;
+  breakout->ball->yspeed = -3;
 
   return breakout;
 }
@@ -111,9 +113,29 @@ void handle_ball_collisions(breakout_t *breakout) {
   }
 
   if (breakout->ball->y + breakout->ball->height >= breakout->bar->y &&
+      breakout->ball->y <= breakout->bar->y + breakout->bar->height &&
       breakout->ball->x + breakout->ball->width >= breakout->bar->x &&
       breakout->ball->x <= breakout->bar->x + breakout->bar->width) {
-    breakout->ball->yspeed = -breakout->ball->yspeed;
+        if (breakout->ball->y + breakout->ball->height - breakout->ball->yspeed <= breakout->bar->y || breakout->ball->y - breakout->ball->yspeed >= breakout->bar->y + breakout->bar->height) {
+          breakout->ball->yspeed = -breakout->ball->yspeed;
+        } else {
+          breakout->ball->xspeed = -breakout->ball->xspeed;
+        }
   }
 
+  for (int i = 0; i < 10; i++) {
+    
+    if (breakout->ball->y <= breakout->bricks[i]->y + breakout->bricks[i]->height &&
+        breakout->ball->y + breakout->ball->height >= breakout->bricks[i]->y &&
+        breakout->ball->x + breakout->ball->width >= breakout->bricks[i]->x &&
+        breakout->ball->x <= breakout->bricks[i]->x + breakout->bricks[i]->width) {
+      if (breakout->ball->y + breakout->ball->height - breakout->ball->yspeed <= breakout->bricks[i]->y ||
+          breakout->ball->y - breakout->ball->yspeed >= breakout->bricks[i]->y + breakout->bricks[i]->height) {
+        breakout->ball->yspeed = -breakout->ball->yspeed;
+      } else {
+        breakout->ball->xspeed = -breakout->ball->xspeed;
+      }
+      break;
+    }
+  }
 }

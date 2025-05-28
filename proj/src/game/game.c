@@ -1,6 +1,4 @@
 #include "game.h"
-#include "../assets/bar_xpm.h"
-#include "../assets/test_xpm.h"
 #include "../sprite/sprite.h"
 #include <stdlib.h>
 
@@ -15,7 +13,6 @@ game_t *game_init() {
   }
 
   game->current_state = STATE_MENU;
-  game->previous_state = STATE_MENU;
 
   game->key_left_pressed = false;
   game->key_right_pressed = false;
@@ -160,8 +157,6 @@ void game_render(game_t *game) {
 void game_change_state(game_t *game, game_state_t new_state) {
   if (game == NULL)
     return;
-
-  game->previous_state = game->current_state;
 
   game->current_state = new_state;
 
