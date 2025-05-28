@@ -12,6 +12,7 @@ typedef enum {
   STATE_PLAYING,    // playing state
   STATE_PAUSED,     // paused state
   STATE_GAME_OVER,  // game over state
+  STATE_HOW_TO_PLAY, // how to play state
   STATE_EXIT        // exit state to terminate the game
 } game_state_t;
 

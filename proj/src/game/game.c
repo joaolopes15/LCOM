@@ -19,6 +19,11 @@
 #include "../assets/menus/retryS_xpm.h"
 #include "../assets/menus/gameover_xpm.h"
 #include "../assets/menus/highscore_xpm.h"
+#include "../assets/menus/instructions/menuinstructions_xpm.h"
+#include "../assets/menus/instructions/pressanykey_xpm.h"
+#include "../assets/menus/instructions/instruction_xpm.h"
+#include "../assets/menus/instructions/gameplayinstruction_xpm.h"
+#include "../assets/menus/background_xpm.h"
 #include "../sprite/sprite.h"
 #include <stdlib.h>
 
@@ -73,7 +78,9 @@ void game_process_input(game_t *game, uint8_t scancode) {
           } else if (game->main_menu_selected_option == 2) { // Exit
             game_change_state(game, STATE_EXIT);
           }
-          // Option 1 (How to Play) can be handled here if needed
+            else if (game->main_menu_selected_option == 1) { // How to Play
+            game_change_state(game, STATE_HOW_TO_PLAY);
+            }
         }
         else if (scancode == 0x01) { // esc key to exit
           game_change_state(game, STATE_EXIT);
@@ -154,6 +161,13 @@ void game_process_input(game_t *game, uint8_t scancode) {
       }
       break;
 
+    case STATE_HOW_TO_PLAY:
+      // Any key press returns to menu
+      if (!is_release) {
+        game_change_state(game, STATE_MENU);
+      }
+      break;
+
     case STATE_EXIT:
       break;
   }
@@ -183,6 +197,9 @@ void game_update(game_t *game) {
     case STATE_GAME_OVER:
       break;
 
+    case STATE_HOW_TO_PLAY:
+      break;
+
     case STATE_EXIT:
       break;
   }
@@ -196,6 +213,7 @@ void game_render(game_t *game) {
   switch (game->current_state) {
     case STATE_MENU:
       clear_screen();
+      draw_xpm((xpm_map_t) background_xpm, 0, 0);
       draw_xpm((xpm_map_t) welcome_xpm , 200, 0);
       draw_xpm((xpm_map_t) to_xpm, 450, 0);
       draw_xpm((xpm_map_t) logo_xpm, 270, 100);
@@ -258,6 +276,12 @@ void game_render(game_t *game) {
 
       break;
 
+      case STATE_HOW_TO_PLAY:
+      clear_screen();
+      draw_xpm((xpm_map_t) instruction_xpm, 250, 0);
+      draw_xpm((xpm_map_t) gameplayinstruction_xpm, 100, 200);
+      //draw_xpm((xpm_map_t) menuinstructions_xpm, 250, 400);
+      //draw_xpm((xpm_map_t) pressanykey_xpm, 250, 500);
     case STATE_EXIT:
       break;
   }
@@ -283,6 +307,9 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_GAME_OVER:
+      break;
+
+    case STATE_HOW_TO_PLAY:
       break;
 
     case STATE_EXIT:
