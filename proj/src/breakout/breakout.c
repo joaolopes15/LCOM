@@ -4,6 +4,7 @@
 #include "../assets/red_brick_xpm.h"
 #include "../assets/orange_brick_xpm.h"
 #include "../assets/yellow_brick_xpm.h"
+#include "../assets/green_brick_xpm.h"
 
 breakout_t *breakout_init() {
   breakout_t *breakout = (breakout_t *) malloc(sizeof(breakout_t));
@@ -64,6 +65,20 @@ breakout_t *breakout_init() {
     breakout->bricks[i]->y = 160;
   }
 
+  for (int i = 36; i < 48; i++) {
+    breakout->bricks[i] = create_sprite((xpm_map_t) green_brick_xpm);
+    if (breakout->bricks[i] == NULL) {
+      destroy_sprite(breakout->bricks[i]);
+      free(breakout);
+      return NULL;
+    }
+
+    int total_width = 12 * breakout->bricks[i]->width + 9 * 12;
+    int start_x = (800 - total_width) / 2;
+    breakout->bricks[i]->x = start_x + (i - 36) * (breakout->bricks[i]->width + 10);
+    breakout->bricks[i]->y = 190;
+  }
+
   breakout->ball = create_sprite((xpm_map_t) ball_xpm);
   if (breakout->ball == NULL) {
     destroy_sprite(breakout->ball);
@@ -80,7 +95,7 @@ breakout_t *breakout_init() {
 }
 
 int draw_bricks(breakout_t *breakout) {
-  for (int i = 0; i < 36; i++) {
+  for (int i = 0; i < 48; i++) {
     if (draw_sprite(breakout->bricks[i], breakout->bricks[i]->x, breakout->bricks[i]->y) != 0) {
       return 1;
     }
@@ -115,7 +130,7 @@ void destroy_breakout(breakout_t *breakout) {
     destroy_sprite(breakout->bar);
   }
 
-  for (int i = 0; i < 36; i++) {
+  for (int i = 0; i < 48; i++) {
     destroy_sprite(breakout->bricks[i]);
   }
 
@@ -155,7 +170,7 @@ void handle_ball_collisions(breakout_t *breakout) {
         }
   }
 
-  for (int i = 0; i < 36; i++) {
+  for (int i = 0; i < 48; i++) {
     
     if (breakout->ball->y <= breakout->bricks[i]->y + breakout->bricks[i]->height &&
         breakout->ball->y + breakout->ball->height >= breakout->bricks[i]->y &&
