@@ -7,6 +7,8 @@
 #include "../assets/menus/exittomenu_xpm.h"
 #include "../assets/menus/exitS_xpm.h"
 #include "../assets/menus/exit_xpm.h"
+#include "../assets/menus/background4_xpm.h"
+#include "../assets/menus/gameoverBIGGER_xpm.h"
 #include "../drivers/video/video.h"
 
 
@@ -34,7 +36,8 @@ void gameovermenu_process_input(game_t *game, uint8_t scancode) {
 }
 
 void gameovermenu_render(game_t *game) {
-    Sprite *gameover_sprite = create_sprite((xpm_map_t) gameover_xpm);
+    Sprite *background_sprite = create_sprite((xpm_map_t) background4_xpm);
+    Sprite *gameover_sprite = create_sprite((xpm_map_t) gameoverBIGGER_xpm);
     Sprite *highscore_sprite = create_sprite((xpm_map_t) highscore_xpm);
     Sprite *retry_sprite = create_sprite((xpm_map_t) retry_xpm);
     Sprite *retryS_sprite = create_sprite((xpm_map_t) retryS_xpm);
@@ -43,7 +46,8 @@ void gameovermenu_render(game_t *game) {
     Sprite *exit_sprite = create_sprite((xpm_map_t) exit_xpm);
     Sprite *exitS_sprite = create_sprite((xpm_map_t) exitS_xpm);
     clear_screen();
-    draw_sprite(gameover_sprite, 250, 100);
+    draw_sprite(background_sprite, 0, 0);
+    draw_sprite(gameover_sprite, 250, 50);
     draw_sprite(highscore_sprite, 250, 200);
     
     if (game->game_over_selected_option == 0)
@@ -57,7 +61,7 @@ void gameovermenu_render(game_t *game) {
         draw_sprite(exittomenu_sprite, 250, 400);
     
     if (game->game_over_selected_option == 2)
-        draw_sprite(exitS_sprite, 250, 500);
+        draw_sprite(exitS_sprite, 220, 500);
     else
         draw_sprite(exit_sprite, 250, 500);
     

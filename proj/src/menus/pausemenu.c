@@ -6,6 +6,8 @@
 #include "../assets/menus/retry_xpm.h"
 #include "../assets/menus/exittomenuS_xpm.h"
 #include "../assets/menus/exittomenu_xpm.h"
+#include "../assets/menus/background4_xpm.h"
+#include "../assets/menus/pausedBIGGER_xpm.h"
 #include "../drivers/video/video.h"
 
 void pausemenu_process_input(game_t *game, uint8_t scancode) {
@@ -33,7 +35,8 @@ void pausemenu_process_input(game_t *game, uint8_t scancode) {
 
 void pausemenu_render(game_t *game) {
     clear_screen();
-    Sprite *paused_sprite = create_sprite((xpm_map_t) paused_xpm);
+    Sprite *background_sprite = create_sprite((xpm_map_t) background4_xpm);
+    Sprite *paused_sprite = create_sprite((xpm_map_t) pausedBIGGER_xpm);
     Sprite *continueS_sprite = create_sprite((xpm_map_t) continueS_xpm);
     Sprite *continue_sprite = create_sprite((xpm_map_t) continue_xpm);
     Sprite *retryS_sprite = create_sprite((xpm_map_t) retryS_xpm);
@@ -41,7 +44,8 @@ void pausemenu_render(game_t *game) {
     Sprite *exittomenuS_sprite = create_sprite((xpm_map_t) exittomenuS_xpm);
     Sprite *exittomenu_sprite = create_sprite((xpm_map_t) exittomenu_xpm);
     
-    draw_sprite(paused_sprite, 250, 100);
+    draw_sprite(background_sprite, 0, 0);
+    draw_sprite(paused_sprite, 200, 30);
     
     if (game->pause_menu_selected_option == 0)
         draw_sprite(continueS_sprite, 250, 200);
@@ -65,4 +69,5 @@ void pausemenu_render(game_t *game) {
     destroy_sprite(retry_sprite);
     destroy_sprite(exittomenuS_sprite);
     destroy_sprite(exittomenu_sprite);
+    destroy_sprite(background_sprite);
 }
