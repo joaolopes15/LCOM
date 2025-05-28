@@ -20,5 +20,7 @@
 #define SET_SCALING_2_1         0xE7
 #define SET_SCALING_1_1         0xE6
 
+#define ACK 0xFA    
+#define NACK 0xFE
 
 #endif /* _LCOM_I8042_H_ */
