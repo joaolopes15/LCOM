@@ -40,10 +40,7 @@ int read_KBC_output(uint8_t port, uint8_t *output, uint8_t mouse){
             }
             return 0;
         }
-        // Simple delay instead of tickdelay to avoid blocking in interrupt context
-        for (int i = 0; i < 1000; i++) {
-            // Small busy-wait delay
-        }
+        tickdelay(micros_to_ticks(20000));
         tries--;
     }
 
@@ -67,10 +64,7 @@ int(write_KBC_command)(uint8_t port, uint8_t command){
             }
             return 0;
         }
-        // Simple delay instead of tickdelay to avoid blocking in interrupt context
-        for (int i = 0; i < 1000; i++) {
-            // Small busy-wait delay
-        }
+        tickdelay(micros_to_ticks(20000));
         tries--;
     }
 

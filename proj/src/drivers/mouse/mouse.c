@@ -22,7 +22,6 @@ int mouse_unsubscribe_int(){
 
 void (mouse_ih)() {
   if(read_KBC_output(0x60, &curr_byte, 1) != 0) {
-        // If read fails, don't update curr_byte
         return;
     }
 }
@@ -72,21 +71,29 @@ int (m_write)(uint8_t command) {
   uint8_t response;
   int rem_attemps = 10;
 
+  if (sys_irqdisable(&m_hook) != 0) {
+    return 1;
+  }
+
   while (rem_attemps > 0) {
     
     if (write_KBC_command(0x64, WRITE_BYTE_MOUSE) != 0) {
+      sys_irqenable(&m_hook);
       return 1;  
     }
     
     if (write_KBC_command(0x60, command) != 0) {
+      sys_irqenable(&m_hook);
       return 1;
     }
     
-    if (util_sys_inb(0x60, &response) != 0) {
-      return 1; 
+    if (read_KBC_output(0x60, &response, 1) != 0) {
+      sys_irqenable(&m_hook);
+      return 1;
     }
     
     if (response == ACK) {
+      sys_irqenable(&m_hook);
       return 0; 
     }
     
@@ -97,5 +104,6 @@ int (m_write)(uint8_t command) {
     rem_attemps--;
   }
   
-  return 1;  // Return error if all attempts failed
+  sys_irqenable(&m_hook);
+  return 1;
 }
