@@ -21,9 +21,6 @@ int move_sprite_down(Sprite *sprite);
 int move_sprite_up(Sprite *sprite);
 int move_sprite_left(Sprite *sprite);
 int move_sprite_right(Sprite *sprite);
-
-// Mouse movement functions
-void move_sprite_to_position(Sprite *sprite, int x, int y);
-void move_sprite_towards(Sprite *sprite, int target_x, int target_y);
+void move_sprite_mouse(Sprite *sprite, int target_x, int target_y, int xspeed);
 
 #endif

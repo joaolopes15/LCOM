@@ -153,7 +153,7 @@ void game_update(game_t *game) {
       }
       else if (game->mouse_control_active) {
         // Only move towards mouse target if no keyboard input is active
-        move_sprite_towards(game->barra, game->mouse_target_x, game->barra->y);
+        move_sprite_mouse(game->barra, game->mouse_target_x, game->barra->y, 100);
       }
       break;
 

@@ -96,24 +96,12 @@ int move_sprite_right(Sprite *sprite) {
     return 0;
 }
 
-// Move sprite to specific position (for mouse control)
-void move_sprite_to_position(Sprite *sprite, int x, int y) {
-    sprite->x = x;
-    sprite->y = y;
-    
-    // Clamp to screen bounds
-    if (sprite->x < 0) sprite->x = 0;
-    if (sprite->x + sprite->width > vmi_p.XResolution) {
-        sprite->x = vmi_p.XResolution - sprite->width;
-    }
-}
-
 // Smooth movement towards target position
-void move_sprite_towards(Sprite *sprite, int target_x, int target_y) {
+void move_sprite_mouse(Sprite *sprite, int target_x, int target_y, int xspeed) {
     int dx = target_x - sprite->x;
     
-    if (abs(dx) > sprite->xspeed) {
-        sprite->x += (dx > 0) ? sprite->xspeed : -sprite->xspeed;
+    if (abs(dx) > xspeed) {
+        sprite->x += (dx > 0) ? xspeed : -xspeed;
     } else {
         sprite->x = target_x;
     }

@@ -82,8 +82,6 @@ int (m_write)(uint8_t command) {
       return 1;
     }
     
-    tickdelay(micros_to_ticks(20000));
-    
     if (util_sys_inb(0x60, &response) != 0) {
       return 1; 
     }
