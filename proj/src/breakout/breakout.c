@@ -6,7 +6,19 @@
 #include "../assets/orange_brick_xpm.h"
 #include "../assets/red_brick_xpm.h"
 #include "../assets/yellow_brick_xpm.h"
+#include "../assets/numbers/number_zero_xpm.h"
+#include "../assets/numbers/number_one_xpm.h"
+#include "../assets/numbers/number_two_xpm.h"
+#include "../assets/numbers/number_three_xpm.h"
+#include "../assets/numbers/number_four_xpm.h"
+#include "../assets/numbers/number_five_xpm.h"
+#include "../assets/numbers/number_six_xpm.h"
+#include "../assets/numbers/number_seven_xpm.h"
+#include "../assets/numbers/number_eight_xpm.h"
+#include "../assets/numbers/number_nine_xpm.h"
 #include <math.h>
+#include <string.h>
+#include <stdio.h>
 
 breakout_t *breakout_init() {
   breakout_t *breakout = (breakout_t *) malloc(sizeof(breakout_t));
@@ -28,6 +40,8 @@ breakout_t *breakout_init() {
   breakout->ball = create_sprite((xpm_map_t) ball_xpm);
 
   breakout->lives = 3;
+
+  breakout->score = 0;
 
   create_bricks(breakout);
 
@@ -139,6 +153,39 @@ int draw_lives(breakout_t *breakout) {
   return 0;
 }
 
+int draw_score(breakout_t *breakout) {
+  const xpm_map_t digit_xpms[] = {
+    (xpm_map_t) number_zero_xpm, (xpm_map_t) number_one_xpm, (xpm_map_t) number_two_xpm, 
+    (xpm_map_t) number_three_xpm, (xpm_map_t) number_four_xpm, (xpm_map_t) number_five_xpm, 
+    (xpm_map_t) number_six_xpm, (xpm_map_t) number_seven_xpm, (xpm_map_t) number_eight_xpm, 
+    (xpm_map_t) number_nine_xpm
+  };
+
+  if (breakout->score == 0) {
+    if (draw_xpm(digit_xpms[0], 395, 5)) {
+      return 1;
+    }
+    return 0;
+  }
+
+  char score_str[20];
+  sprintf(score_str, "%d", breakout->score);
+  int num_digits = strlen(score_str);
+  
+  int digit_width = 10;
+  int total_width = num_digits * digit_width;
+  int start_x = 400 - (total_width / 2);
+
+  for (int i = 0; i < num_digits; i++) {
+    int digit = score_str[i] - '0';
+    if (draw_xpm(digit_xpms[digit], start_x + (i * digit_width), 5)) {
+      return 1;
+    }
+  }
+  
+  return 0;
+}
+
 int draw_breakout(breakout_t *breakout) {
   if (breakout == NULL || breakout->bar == NULL || breakout->ball == NULL) {
     return 1;
@@ -151,6 +198,8 @@ int draw_breakout(breakout_t *breakout) {
   draw_bricks(breakout);
 
   draw_lives(breakout);
+
+  draw_score(breakout);
 
   if (draw_sprite(breakout->ball, breakout->ball->x, breakout->ball->y) != 0) {
     return 1;
@@ -257,6 +306,7 @@ void handle_ball_collisions(breakout_t *breakout) {
       else {
         breakout->ball->xspeed = -breakout->ball->xspeed;
       }
+      breakout->score += 100;
       breakout->active_bricks[i] = false;
       break;
     }
