@@ -9,6 +9,7 @@ typedef struct {
   Sprite *ball;
   Sprite *bricks[60];
   bool active_bricks[60];
+  int lives;
 } breakout_t;
 
 breakout_t* breakout_init();
@@ -16,6 +17,8 @@ breakout_t* breakout_init();
 void create_bricks(breakout_t *breakout);
 
 int draw_bricks(breakout_t *breakout);
+
+int draw_lives(breakout_t *breakout);
 
 int draw_breakout(breakout_t *breakout);
 

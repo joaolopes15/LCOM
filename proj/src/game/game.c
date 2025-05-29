@@ -1,6 +1,5 @@
 #include "game.h"
 #include "../sprite/sprite.h"
-#include <stdlib.h>
 
 // TODO: put all scancodes in a separate header file
 // initialize the game structure and set initial state
@@ -61,7 +60,7 @@ void game_process_input(game_t *game, uint8_t scancode) {
         game->key_down_pressed = !is_release;
       }
       else if (key_code == 0x39) {
-        game->key_space_pressed =!is_release;
+        game->key_space_pressed = !is_release;
       }
       break;
 
@@ -114,6 +113,9 @@ void game_update(game_t *game) {
         game->breakout->ball->xspeed = 0;
         game->breakout->ball->yspeed = -3;
       }
+      if (game->breakout->lives == 0) {
+        game_change_state(game, STATE_GAME_OVER);
+      }
       game->breakout->ball->x += game->breakout->ball->xspeed;
       game->breakout->ball->y += game->breakout->ball->yspeed;
       handle_ball_collisions(game->breakout);
@@ -153,7 +155,7 @@ void game_render(game_t *game) {
 
     case STATE_GAME_OVER:
       clear_screen();
-      vg_draw_rectangle(100, 100, 400, 300, 0x3);
+      vg_draw_rectangle(100, 100, 400, 300, 0xffffff);
       break;
 
     case STATE_EXIT:

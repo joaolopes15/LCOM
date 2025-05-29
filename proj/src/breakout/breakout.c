@@ -26,6 +26,8 @@ breakout_t *breakout_init() {
 
   breakout->ball = create_sprite((xpm_map_t) ball_xpm);
 
+  breakout->lives = 3;
+
   create_bricks(breakout);
 
   if (breakout->ball == NULL) {
@@ -127,6 +129,15 @@ int draw_bricks(breakout_t *breakout) {
   return 0;
 }
 
+int draw_lives(breakout_t *breakout) {
+  for (int i = 0; i < breakout->lives; i++) {
+    if (draw_xpm((xpm_map_t) ball_xpm, (i * 15) + 5, 5) != 0) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int draw_breakout(breakout_t *breakout) {
   if (breakout == NULL || breakout->bar == NULL || breakout->ball == NULL) {
     return 1;
@@ -137,6 +148,8 @@ int draw_breakout(breakout_t *breakout) {
   }
 
   draw_bricks(breakout);
+
+  draw_lives(breakout);
 
   if (draw_sprite(breakout->ball, breakout->ball->x, breakout->ball->y) != 0) {
     return 1;
@@ -197,6 +210,7 @@ void handle_ball_collisions(breakout_t *breakout) {
     breakout->ball->yspeed = -breakout->ball->yspeed;
   }
   if (breakout->ball->y + breakout->ball->height >= vmi_p.YResolution) {
+    breakout->lives--;
     breakout->ball->x = 395;
     breakout->ball->y = 490;
     breakout->ball->xspeed = 3;
