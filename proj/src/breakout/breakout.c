@@ -6,6 +6,7 @@
 #include "../assets/orange_brick_xpm.h"
 #include "../assets/red_brick_xpm.h"
 #include "../assets/yellow_brick_xpm.h"
+#include <math.h>
 
 breakout_t *breakout_init() {
   breakout_t *breakout = (breakout_t *) malloc(sizeof(breakout_t));
@@ -37,7 +38,7 @@ breakout_t *breakout_init() {
   }
 
   breakout->ball->x = 395;
-  breakout->ball->y = 490;
+  breakout->ball->y = 485;
   breakout->ball->xspeed = 0;
   breakout->ball->yspeed = 0;
 
@@ -168,9 +169,7 @@ int draw_breakout(breakout_t *breakout) {
     draw_bricks(breakout);
 
     breakout->ball->x = 395;
-    breakout->ball->y = 490;
-    breakout->ball->xspeed = 0;
-    breakout->ball->yspeed = 0;
+    breakout->ball->y = 485;
   }
 
   return 0;
@@ -212,20 +211,34 @@ void handle_ball_collisions(breakout_t *breakout) {
   if (breakout->ball->y + breakout->ball->height >= vmi_p.YResolution) {
     breakout->lives--;
     breakout->ball->x = 395;
-    breakout->ball->y = 490;
-    breakout->ball->xspeed = 3;
-    breakout->ball->yspeed = -3;
+    breakout->ball->y = 485;
+    breakout->ball->xspeed = 0;
+    breakout->ball->yspeed = 0;
   }
 
   if (breakout->ball->y + breakout->ball->height >= breakout->bar->y &&
       breakout->ball->y <= breakout->bar->y + breakout->bar->height &&
       breakout->ball->x + breakout->ball->width >= breakout->bar->x &&
       breakout->ball->x <= breakout->bar->x + breakout->bar->width) {
-    if (breakout->ball->y + breakout->ball->height - breakout->ball->yspeed <= breakout->bar->y || breakout->ball->y - breakout->ball->yspeed >= breakout->bar->y + breakout->bar->height) {
-      breakout->ball->yspeed = -breakout->ball->yspeed;
-    }
-    else {
-      breakout->ball->xspeed = -breakout->ball->xspeed;
+    
+    int ball_center_x = breakout->ball->x + breakout->ball->width / 2;
+    int bar_center_x = breakout->bar->x + breakout->bar->width / 2;
+    
+    float relative_hit = (float)(ball_center_x - bar_center_x) / (breakout->bar->width / 2);
+    
+    if (relative_hit < -1.0f) relative_hit = -1.0f;
+    if (relative_hit > 1.0f) relative_hit = 1.0f;
+    
+    float current_speed = sqrt(breakout->ball->xspeed * breakout->ball->xspeed + 
+                              breakout->ball->yspeed * breakout->ball->yspeed);
+    
+    float angle = relative_hit * (M_PI / 3.0f);
+    
+    breakout->ball->xspeed = (int)(current_speed * sin(angle));
+    breakout->ball->yspeed = -(int)(current_speed * cos(angle));
+    
+    if (breakout->ball->yspeed > -3) {
+      breakout->ball->yspeed = -3;
     }
   }
 
