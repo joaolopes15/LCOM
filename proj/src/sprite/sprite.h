@@ -21,5 +21,6 @@ int move_sprite_down(Sprite *sprite);
 int move_sprite_up(Sprite *sprite);
 int move_sprite_left(Sprite *sprite);
 int move_sprite_right(Sprite *sprite);
+void move_sprite_mouse(Sprite *sprite, int target_x, int target_y, int xspeed);
 
 #endif

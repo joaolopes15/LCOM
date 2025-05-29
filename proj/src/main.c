@@ -1,11 +1,14 @@
 #include <lcom/lcf.h>
 #include <lcom/timer.h>
 #include "drivers/keyboard/keyboard.h"
+#include "drivers/mouse/mouse.h"
 #include "drivers/video/video.h"
 #include "game/game.h"
 
 extern uint8_t scancode;
 extern int counter;
+extern struct packet m_packet;
+extern int byte_idx;
 
 int main(int argc, char *argv[]) {
   // sets the language of LCF messages (can be either EN-US or PT-PT)
@@ -34,7 +37,7 @@ int main(int argc, char *argv[]) {
 int (proj_main_loop)(int argc, char *argv[]) {
   int ipc_status;
   message msg;
-  uint8_t irq_set_keyboard, irq_set_timer;
+  uint8_t irq_set_keyboard, irq_set_timer, m_irq_set;   
   game_t* game;
 
   // Initialize the game
@@ -55,7 +58,24 @@ int (proj_main_loop)(int argc, char *argv[]) {
   }
 
   if (keyboard_subscribe_int(&irq_set_keyboard) != 0) {
+    mouse_unsubscribe_int();
     timer_unsubscribe_int();
+    game_exit(game);
+    return 1;
+  }
+
+  if (mouse_subscribe_int(&m_irq_set) != 0) {
+    keyboard_unsubscribe_int();
+    timer_unsubscribe_int();
+    game_exit(game);
+    return 1;
+  }
+
+  // Enable mouse data reporting
+  if (m_write(ENABLE_DATA_REPORTING) != 0) {
+    keyboard_unsubscribe_int();
+    timer_unsubscribe_int();
+    mouse_unsubscribe_int();
     game_exit(game);
     return 1;
   }
@@ -63,6 +83,7 @@ int (proj_main_loop)(int argc, char *argv[]) {
   if (vg_init(0x115) == NULL) {
     keyboard_unsubscribe_int();
     timer_unsubscribe_int();
+    mouse_unsubscribe_int();
     game_exit(game);
     return 1;
   }
@@ -91,6 +112,16 @@ int (proj_main_loop)(int argc, char *argv[]) {
             
             flip();
           }
+
+          if (msg.m_notify.interrupts & m_irq_set) {
+            mouse_ih();
+            packet_assembly();
+            if (byte_idx == 3) {
+              m_assemble_packet();
+              game_process_mouse_input(game, &m_packet);
+              byte_idx = 0; // Reset byte index after processing
+            }
+          }
           break;
           
         default:
@@ -108,6 +139,10 @@ int (proj_main_loop)(int argc, char *argv[]) {
   
   if (keyboard_unsubscribe_int() != 0) {
     printf("Failed to unsubscribe keyboard interrupts\n");
+  }
+
+  if (mouse_unsubscribe_int() != 0) {
+    printf("Failed to unsubscribe mouse interrupts\n");
   }
   
   // Clean up resources
