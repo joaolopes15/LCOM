@@ -95,3 +95,18 @@ int move_sprite_right(Sprite *sprite) {
 
     return 0;
 }
+
+void move_sprite_mouse(Sprite *sprite, int target_x, int target_y, int xspeed) {
+    int dx = target_x - sprite->x;
+    
+    if (abs(dx) > xspeed) {
+        sprite->x += (dx > 0) ? xspeed : -xspeed;
+    } else {
+        sprite->x = target_x;
+    }
+
+    if (sprite->x < 0) sprite->x = 0;
+    if (sprite->x + sprite->width > vmi_p.XResolution) {
+        sprite->x = vmi_p.XResolution - sprite->width;
+    }
+}

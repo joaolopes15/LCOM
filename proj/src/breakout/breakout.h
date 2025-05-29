@@ -30,6 +30,8 @@ void destroy_breakout(breakout_t *breakout);
 
 void handle_ball_collisions(breakout_t *breakout);
 
-void move_bar_with_ball(breakout_t *breakout, int direction);
+void move_bar_with_ball_keyboard(breakout_t *breakout, int direction);
+
+void move_bar_with_ball_mouse(breakout_t *breakout, int target_x, int target_y, int xspeed);
 
 #endif
