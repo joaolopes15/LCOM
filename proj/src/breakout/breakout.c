@@ -55,6 +55,7 @@ breakout_t *breakout_init() {
   breakout->ball->y = 485;
   breakout->ball->xspeed = 0;
   breakout->ball->yspeed = 0;
+  breakout->ball_attached = true;
 
   return breakout;
 }
@@ -219,6 +220,8 @@ int draw_breakout(breakout_t *breakout) {
 
     breakout->ball->x = 395;
     breakout->ball->y = 485;
+    breakout->ball->xspeed = 3;
+    breakout->ball->yspeed = -3;
   }
 
   return 0;
@@ -263,6 +266,7 @@ void handle_ball_collisions(breakout_t *breakout) {
     breakout->ball->y = 485;
     breakout->ball->xspeed = 0;
     breakout->ball->yspeed = 0;
+    breakout->ball_attached = true;
   }
 
   if (breakout->ball->y + breakout->ball->height >= breakout->bar->y &&
@@ -310,5 +314,24 @@ void handle_ball_collisions(breakout_t *breakout) {
       breakout->active_bricks[i] = false;
       break;
     }
+  }
+}
+
+void move_bar_with_ball(breakout_t *breakout, int direction) {
+  if (breakout == NULL || breakout->bar == NULL || breakout->ball == NULL) {
+    return;
+  }
+
+  int old_bar_x = breakout->bar->x;
+  
+  if (direction < 0) {
+    move_sprite_left(breakout->bar);
+  } else if (direction > 0) {
+    move_sprite_right(breakout->bar);
+  }
+
+  if (breakout->ball_attached) {
+    int bar_movement = breakout->bar->x - old_bar_x;
+    breakout->ball->x += bar_movement;
   }
 }

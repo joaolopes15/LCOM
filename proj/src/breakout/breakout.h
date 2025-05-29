@@ -11,6 +11,7 @@ typedef struct {
   bool active_bricks[60];
   int lives;
   int score;
+  bool ball_attached;
 } breakout_t;
 
 breakout_t* breakout_init();
@@ -28,5 +29,7 @@ int draw_breakout(breakout_t *breakout);
 void destroy_breakout(breakout_t *breakout);
 
 void handle_ball_collisions(breakout_t *breakout);
+
+void move_bar_with_ball(breakout_t *breakout, int direction);
 
 #endif

@@ -98,10 +98,10 @@ void game_update(game_t *game) {
 
     case STATE_PLAYING:
       if (game->key_left_pressed) {
-        move_sprite_left(game->breakout->bar);
+        move_bar_with_ball(game->breakout, -1);
       }
       if (game->key_right_pressed) {
-        move_sprite_right(game->breakout->bar);
+        move_bar_with_ball(game->breakout, 1);
       }
       if (game->key_up_pressed) {
         move_sprite_up(game->breakout->ball);
@@ -112,12 +112,15 @@ void game_update(game_t *game) {
       if (game->key_space_pressed) {
         game->breakout->ball->xspeed = 0;
         game->breakout->ball->yspeed = -3;
+        game->breakout->ball_attached = false;
       }
       if (game->breakout->lives == 0) {
         game_change_state(game, STATE_GAME_OVER);
       }
-      game->breakout->ball->x += game->breakout->ball->xspeed;
-      game->breakout->ball->y += game->breakout->ball->yspeed;
+      if (!game->breakout->ball_attached) {
+        game->breakout->ball->x += game->breakout->ball->xspeed;
+        game->breakout->ball->y += game->breakout->ball->yspeed;
+      }
       handle_ball_collisions(game->breakout);
       break;
 
