@@ -19,10 +19,14 @@ game_t *game_init() {
 
   game->key_left_pressed = false;
   game->key_right_pressed = false;
+  game->key_up_pressed = false;
+  game->key_down_pressed = false;
+  game->key_space_pressed = false;
+
   
   game->mouse_x = 400; 
   game->mouse_y = 300;
-  game->mouse_target_x = 350; // Initialize to same position as bar
+  game->mouse_target_x = 350; 
   game->mouse_control_active = false;
 
   if (game->barra == NULL) {
@@ -145,10 +149,12 @@ void game_update(game_t *game) {
     case STATE_PLAYING:
       if (game->key_left_pressed) {
         move_sprite_left(game->barra);
+        move_bar_with_ball(game->breakout, -1);
         game->mouse_control_active = false; // Disable mouse control when using keyboard
       }
       else if (game->key_right_pressed) {
         move_sprite_right(game->barra);
+        move_bar_with_ball(game->breakout, 1);
         game->mouse_control_active = false; // Disable mouse control when using keyboard
       }
       else if (game->mouse_control_active) {

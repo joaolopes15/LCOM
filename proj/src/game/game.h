@@ -6,6 +6,7 @@
 #include "../drivers/keyboard/keyboard.h"
 #include "../drivers/mouse/mouse.h"
 #include "../sprite/sprite.h"
+#include "../breakout/breakout.h"
 
 // enum of all possible game states
 typedef enum {
@@ -24,6 +25,10 @@ typedef struct {
   
   bool key_left_pressed;
   bool key_right_pressed;
+  bool key_up_pressed;
+  bool key_down_pressed;
+  bool key_space_pressed;
+
   
   int mouse_x;
   int mouse_y; 
