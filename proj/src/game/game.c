@@ -1,9 +1,7 @@
 #include "game.h"
-#include "../assets/bar_xpm.h"
-#include "../assets/test_xpm.h"
 #include "../sprite/sprite.h"
-#include <stdlib.h>
 
+// TODO: put all scancodes in a separate header file
 // initialize the game structure and set initial state
 game_t *game_init() {
   game_t *game = (game_t *) malloc(sizeof(game_t));
@@ -14,8 +12,6 @@ game_t *game_init() {
   }
 
   game->current_state = STATE_MENU;
-  game->previous_state = STATE_MENU;
-  game->barra = create_sprite((xpm_map_t) bar_xpm);
 
   game->key_left_pressed = false;
   game->key_right_pressed = false;
@@ -71,6 +67,15 @@ void game_process_input(game_t *game, uint8_t scancode) {
       }
       else if (key_code == 0x4D) { // right arrow
         game->key_right_pressed = !is_release;
+      }
+      else if (key_code == 0x48) { // up arrow
+        game->key_up_pressed = !is_release;
+      }
+      else if (key_code == 0x50) { // down arrow
+        game->key_down_pressed = !is_release;
+      }
+      else if (key_code == 0x39) {
+        game->key_space_pressed = !is_release;
       }
       break;
 
@@ -161,6 +166,25 @@ void game_update(game_t *game) {
         // Only move towards mouse target if no keyboard input is active
         move_sprite_mouse(game->barra, game->mouse_target_x, game->barra->y, 100);
       }
+      if (game->key_up_pressed) {
+        move_sprite_up(game->breakout->ball);
+      }
+      if (game->key_down_pressed) {
+        move_sprite_down(game->breakout->ball);
+      }
+      if (game->key_space_pressed) {
+        game->breakout->ball->xspeed = 0;
+        game->breakout->ball->yspeed = -3;
+        game->breakout->ball_attached = false;
+      }
+      if (game->breakout->lives == 0) {
+        game_change_state(game, STATE_GAME_OVER);
+      }
+      if (!game->breakout->ball_attached) {
+        game->breakout->ball->x += game->breakout->ball->xspeed;
+        game->breakout->ball->y += game->breakout->ball->yspeed;
+      }
+      handle_ball_collisions(game->breakout);
       break;
 
     case STATE_PAUSED:
@@ -187,7 +211,7 @@ void game_render(game_t *game) {
 
     case STATE_PLAYING:
       clear_screen();
-      draw_sprite(game->barra, game->barra->x, game->barra->y);
+      draw_breakout(game->breakout);
       break;
 
     case STATE_PAUSED:
@@ -197,7 +221,7 @@ void game_render(game_t *game) {
 
     case STATE_GAME_OVER:
       clear_screen();
-      vg_draw_rectangle(100, 100, 400, 300, 0x3);
+      vg_draw_rectangle(100, 100, 400, 300, 0xffffff);
       break;
 
     case STATE_EXIT:
@@ -210,15 +234,24 @@ void game_change_state(game_t *game, game_state_t new_state) {
   if (game == NULL)
     return;
 
-  game->previous_state = game->current_state;
-
   game->current_state = new_state;
 
   switch (new_state) {
     case STATE_MENU:
+      if (game->breakout != NULL) {
+        destroy_breakout(game->breakout);
+        game->breakout = NULL;
+      }
       break;
 
     case STATE_PLAYING:
+      if (game->breakout == NULL) {
+        game->breakout = breakout_init();
+        if (game->breakout == NULL) {
+          printf("Error initializing breakout game\n");
+          game_change_state(game, STATE_EXIT);
+        }
+      }
       break;
 
     case STATE_PAUSED:
@@ -236,10 +269,6 @@ void game_change_state(game_t *game, game_state_t new_state) {
 void game_exit(game_t *game) {
   if (game == NULL)
     return;
-
-  if (game->barra != NULL) {
-    destroy_sprite(game->barra);
-  }
 
   free(game);
 }

@@ -20,8 +20,7 @@ typedef enum {
 // game structure that holds all game-related information
 typedef struct {
   game_state_t current_state;   // current state of the game
-  game_state_t previous_state;  // previous state of the game
-  Sprite* barra;
+  breakout_t* breakout;
   
   bool key_left_pressed;
   bool key_right_pressed;
