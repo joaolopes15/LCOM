@@ -317,7 +317,7 @@ void handle_ball_collisions(breakout_t *breakout) {
   }
 }
 
-void move_bar_with_ball(breakout_t *breakout, int direction) {
+void move_bar_with_ball_keyboard(breakout_t *breakout, int direction) {
   if (breakout == NULL || breakout->bar == NULL || breakout->ball == NULL) {
     return;
   }
@@ -329,6 +329,21 @@ void move_bar_with_ball(breakout_t *breakout, int direction) {
   } else if (direction > 0) {
     move_sprite_right(breakout->bar);
   }
+
+  if (breakout->ball_attached) {
+    int bar_movement = breakout->bar->x - old_bar_x;
+    breakout->ball->x += bar_movement;
+  }
+}
+
+void move_bar_with_ball_mouse(breakout_t *breakout, int target_x, int target_y, int xspeed) {
+  if (breakout == NULL || breakout->bar == NULL || breakout->ball == NULL) {
+    return;
+  }
+
+  int old_bar_x = breakout->bar->x;
+  
+  move_sprite_mouse(breakout->bar, target_x, target_y, xspeed);
 
   if (breakout->ball_attached) {
     int bar_movement = breakout->bar->x - old_bar_x;

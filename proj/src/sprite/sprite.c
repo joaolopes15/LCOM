@@ -96,7 +96,6 @@ int move_sprite_right(Sprite *sprite) {
     return 0;
 }
 
-// Smooth movement towards target position
 void move_sprite_mouse(Sprite *sprite, int target_x, int target_y, int xspeed) {
     int dx = target_x - sprite->x;
     

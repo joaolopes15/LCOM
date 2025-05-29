@@ -26,7 +26,6 @@ game_t *game_init() {
   game->mouse_target_x = 350; 
   game->mouse_control_active = false;
 
-  // Initialize breakout to NULL - will be created when entering PLAYING state
   game->breakout = NULL;
 
   return game;
@@ -102,11 +101,9 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
   if (game == NULL || mouse_packet == NULL)
     return;
 
-  // Update mouse position
   game->mouse_x += mouse_packet->delta_x;
   game->mouse_y += mouse_packet->delta_y;
 
-  // Clamp mouse position to screen bounds
   if (game->mouse_x < 0) game->mouse_x = 0;
   if (game->mouse_x > vmi_p.XResolution) game->mouse_x = vmi_p.XResolution;
   if (game->mouse_y < 0) game->mouse_y = 0;
@@ -114,12 +111,9 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
 
   switch (game->current_state) {
     case STATE_PLAYING:
-      // Set target position for bar sprite to follow mouse X position
-      // Center the bar on the mouse X position
       if (game->breakout != NULL && game->breakout->bar != NULL) {
         game->mouse_target_x = game->mouse_x - game->breakout->bar->width / 2;
         
-        // Clamp target position to screen bounds
         if (game->mouse_target_x < 0) 
           game->mouse_target_x = 0;
         if (game->mouse_target_x + game->breakout->bar->width > vmi_p.XResolution) 
@@ -133,7 +127,6 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
     case STATE_PAUSED:
     case STATE_GAME_OVER:
     case STATE_EXIT:
-      // Mouse input ignored in these states
       game->mouse_control_active = false;
       break;
   }
@@ -151,22 +144,15 @@ void game_update(game_t *game) {
     case STATE_PLAYING:
       if (game->breakout != NULL) {
         if (game->key_left_pressed) {
-          move_sprite_left(game->breakout->bar);
-          game->mouse_control_active = false; // Disable mouse control when using keyboard
+          move_bar_with_ball_keyboard(game->breakout, -1);
+          game->mouse_control_active = false;
         }
         else if (game->key_right_pressed) {
-          move_sprite_right(game->breakout->bar);
-          game->mouse_control_active = false; // Disable mouse control when using keyboard
+          move_bar_with_ball_keyboard(game->breakout, 1);
+          game->mouse_control_active = false;
         }
         else if (game->mouse_control_active && game->breakout->bar != NULL) {
-          // Only move towards mouse target if no keyboard input is active
-          move_sprite_mouse(game->breakout->bar, game->mouse_target_x, game->breakout->bar->y, 100);
-        }
-        if (game->key_up_pressed) {
-          move_sprite_up(game->breakout->ball);
-        }
-        if (game->key_down_pressed) {
-          move_sprite_down(game->breakout->ball);
+          move_bar_with_ball_mouse(game->breakout, game->mouse_target_x, game->breakout->bar->y, 100);
         }
         if (game->key_space_pressed) {
           game->breakout->ball->xspeed = 0;
