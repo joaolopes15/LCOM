@@ -31,11 +31,6 @@ game_t *game_init() {
   game->pause_menu_selected_option = 0;
   game->game_over_selected_option = 0;
 
-  if (game->barra == NULL) {
-    printf("Error creating barra sprite\n");
-    free(game);
-    return NULL;
-  }
   
   game->mouse_x = 400; 
   game->mouse_y = 300;

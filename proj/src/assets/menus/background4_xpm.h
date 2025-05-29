@@ -1,5 +1,5 @@
 /* XPM */
-static char * background4_xpm[] = {
+const char * background4_xpm[] = {
 "800 600 7 1",
 " 	c None",
 ".	c #FFFFFF",

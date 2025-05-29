@@ -1,10 +1,10 @@
 #include "video.h"
 #include <lcom/lcf.h>
 
-static void *video_mem[3];
-static int currentDrawBuffer = 0;
-static int currentDisplayBuffer = 1;
-static int readyBuffer = 2;
+void *video_mem[3];
+int currentDrawBuffer = 0;
+int currentDisplayBuffer = 1;
+int readyBuffer = 2;
 
 int(set_mode)(uint16_t mode) {
   reg86_t reg86;
