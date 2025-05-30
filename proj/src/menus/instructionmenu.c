@@ -42,6 +42,14 @@ menu_action_t instructionmenu_process_input(instruction_menu_t *instruction_menu
     return MENU_ACTION_NONE;
 }
 
+menu_action_t instructionmenu_process_mouse_click(instruction_menu_t *instruction_menu, int mouse_x, int mouse_y) {
+    if (instruction_menu == NULL) {
+        return MENU_ACTION_NONE;
+    }
+    
+    return MENU_ACTION_MAIN_MENU;
+}
+
 void draw_instruction_menu(instruction_menu_t *instruction_menu) {
     if (instruction_menu == NULL) {
         return;

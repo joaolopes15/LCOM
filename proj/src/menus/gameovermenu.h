@@ -21,6 +21,10 @@ game_over_menu_t *game_over_menu_init();
 
 menu_action_t gameovermenu_process_input(game_over_menu_t *game_over_menu, uint8_t scancode);
 
+menu_action_t gameovermenu_process_mouse_click(game_over_menu_t *game_over_menu, int mouse_x, int mouse_y);
+
+void gameovermenu_update_hover(game_over_menu_t *game_over_menu, int mouse_x, int mouse_y);
+
 void draw_game_over(game_over_menu_t *game_over_menu);
 
 void destroy_game_over(game_over_menu_t *game_over_menu);

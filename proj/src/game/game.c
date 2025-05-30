@@ -1,7 +1,7 @@
 #include "game.h"
+#include "../assets/ball_xpm.h"
 #include "../assets/bar_xpm.h"
 #include "../assets/logo_xpm.h"
-#include "../assets/test_xpm.h"
 #include "../menus/gameovermenu.h"
 #include "../menus/instructionmenu.h"
 #include "../menus/mainmenu.h"
@@ -32,6 +32,14 @@ game_t *game_init() {
   game->mouse_y = 300;
   game->mouse_target_x = 350;
   game->mouse_control_active = false;
+
+  game->cursor_sprite = create_sprite((xpm_map_t) ball_xpm);
+  if (game->cursor_sprite == NULL) {
+    printf("Error creating cursor sprite\n");
+    free(game);
+    return NULL;
+  }
+  game->cursor_visible = true;
 
   game->breakout = NULL;
   game->instruction_menu = NULL;
@@ -156,7 +164,7 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
     return;
 
   game->mouse_x += mouse_packet->delta_x;
-  game->mouse_y += mouse_packet->delta_y;
+  game->mouse_y -= mouse_packet->delta_y;
 
   if (game->mouse_x < 0)
     game->mouse_x = 0;
@@ -166,6 +174,80 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
     game->mouse_y = 0;
   if (game->mouse_y > vmi_p.YResolution)
     game->mouse_y = vmi_p.YResolution;
+
+  switch (game->current_state) {
+    case STATE_MENU:
+      if (game->main_menu != NULL) {
+        mainmenu_update_hover(game->main_menu, game->mouse_x, game->mouse_y);
+      }
+      break;
+    case STATE_PAUSED:
+      if (game->pause_menu != NULL) {
+        pausemenu_update_hover(game->pause_menu, game->mouse_x, game->mouse_y);
+      }
+      break;
+    case STATE_GAME_OVER:
+      if (game->game_over_menu != NULL) {
+        gameovermenu_update_hover(game->game_over_menu, game->mouse_x, game->mouse_y);
+      }
+      break;
+    default:
+      break;
+  }
+
+  if (mouse_packet->lb) {
+    menu_action_t action = MENU_ACTION_NONE;
+    
+    switch (game->current_state) {
+      case STATE_MENU:
+        if (game->main_menu != NULL) {
+          action = mainmenu_process_mouse_click(game->main_menu, game->mouse_x, game->mouse_y);
+        }
+        break;
+      case STATE_PAUSED:
+        if (game->pause_menu != NULL) {
+          action = pausemenu_process_mouse_click(game->pause_menu, game->mouse_x, game->mouse_y);
+        }
+        break;
+      case STATE_GAME_OVER:
+        if (game->game_over_menu != NULL) {
+          action = gameovermenu_process_mouse_click(game->game_over_menu, game->mouse_x, game->mouse_y);
+        }
+        break;
+      case STATE_HOW_TO_PLAY:
+        if (game->instruction_menu != NULL) {
+          action = instructionmenu_process_mouse_click(game->instruction_menu, game->mouse_x, game->mouse_y);
+        }
+        break;
+      default:
+        break;
+    }
+    
+    switch (action) {
+      case MENU_ACTION_START_GAME:
+        game_change_state(game, STATE_PLAYING);
+        break;
+      case MENU_ACTION_HOW_TO_PLAY:
+        game_change_state(game, STATE_HOW_TO_PLAY);
+        break;
+      case MENU_ACTION_RETRY:
+        if (game->breakout != NULL) {
+          destroy_breakout(game->breakout);
+          game->breakout = NULL;
+        }
+        game_change_state(game, STATE_PLAYING);
+        break;
+      case MENU_ACTION_MAIN_MENU:
+        game_change_state(game, STATE_MENU);
+        break;
+      case MENU_ACTION_EXIT:
+        game_change_state(game, STATE_EXIT);
+        break;
+      case MENU_ACTION_NONE:
+      default:
+        break;
+    }
+  }
 
   switch (game->current_state) {
     case STATE_PLAYING:
@@ -179,14 +261,20 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
 
         game->mouse_control_active = true;
       }
+      game->cursor_visible = false;
       break;
 
     case STATE_MENU:
     case STATE_PAUSED:
     case STATE_GAME_OVER:
-    case STATE_EXIT:
     case STATE_HOW_TO_PLAY:
       game->mouse_control_active = false;
+      game->cursor_visible = true;
+      break;
+
+    case STATE_EXIT:
+      game->mouse_control_active = false;
+      game->cursor_visible = false;
       break;
   }
 }
@@ -272,6 +360,10 @@ void game_render(game_t *game) {
     case STATE_EXIT:
       break;
   }
+
+  if (game->cursor_visible && game->cursor_sprite != NULL) {
+    draw_sprite(game->cursor_sprite, game->mouse_x, game->mouse_y);
+  }
 }
 
 // change the current game state
@@ -283,6 +375,7 @@ void game_change_state(game_t *game, game_state_t new_state) {
 
   switch (new_state) {
     case STATE_MENU:
+      game->cursor_visible = true;
       if (game->breakout != NULL) {
         destroy_breakout(game->breakout);
         game->breakout = NULL;
@@ -309,6 +402,7 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_PLAYING:
+      game->cursor_visible = false;
       if (game->breakout == NULL) {
         game->breakout = breakout_init();
         if (game->breakout == NULL) {
@@ -331,6 +425,7 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_PAUSED:
+      game->cursor_visible = true;
       if (game->pause_menu == NULL) {
         game->pause_menu = pause_menu_init();
         if (game->pause_menu == NULL) {
@@ -341,6 +436,7 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_GAME_OVER:
+      game->cursor_visible = true;
       if (game->game_over_menu == NULL) {
         game->game_over_menu = game_over_menu_init();
         if (game->game_over_menu == NULL) {
@@ -369,6 +465,11 @@ void game_change_state(game_t *game, game_state_t new_state) {
 void game_exit(game_t *game) {
   if (game == NULL)
     return;
+
+  if (game->cursor_sprite != NULL) {
+    destroy_sprite(game->cursor_sprite);
+    game->cursor_sprite = NULL;
+  }
 
   free(game);
 }

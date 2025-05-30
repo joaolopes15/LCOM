@@ -99,6 +99,51 @@ menu_action_t pausemenu_process_input(pause_menu_t *pause_menu, uint8_t scancode
   return MENU_ACTION_NONE;
 }
 
+menu_action_t pausemenu_process_mouse_click(pause_menu_t *pause_menu, int mouse_x, int mouse_y) {
+  if (pause_menu == NULL) {
+    return MENU_ACTION_NONE;
+  }
+  
+  // Check if click is on "Continue" button (at position 250, 200)
+  if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 200 && mouse_y <= 280) {
+    pause_menu->selected_option = 0;
+    return MENU_ACTION_START_GAME;
+  }
+  
+  // Check if click is on "Retry" button (at position 250, 300)
+  if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 300 && mouse_y <= 380) {
+    pause_menu->selected_option = 1;
+    return MENU_ACTION_RETRY;
+  }
+  
+  // Check if click is on "Exit to Menu" button (at position 250, 400)
+  if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 400 && mouse_y <= 480) {
+    pause_menu->selected_option = 2;
+    return MENU_ACTION_MAIN_MENU;
+  }
+  
+  return MENU_ACTION_NONE;
+}
+
+void pausemenu_update_hover(pause_menu_t *pause_menu, int mouse_x, int mouse_y) {
+  if (pause_menu == NULL) {
+    return;
+  }
+  
+  // Check if mouse is over "Continue" button (at position 250, 200)
+  if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 200 && mouse_y <= 280) {
+    pause_menu->selected_option = 0;
+  }
+  // Check if mouse is over "Retry" button (at position 250, 300)
+  else if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 300 && mouse_y <= 380) {
+    pause_menu->selected_option = 1;
+  }
+  // Check if mouse is over "Exit to Menu" button (at position 250, 400)
+  else if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 400 && mouse_y <= 480) {
+    pause_menu->selected_option = 2;
+  }
+}
+
 void draw_pause_menu(pause_menu_t *pause_menu) {
   if (pause_menu == NULL) {
     return;
