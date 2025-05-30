@@ -107,6 +107,43 @@ menu_action_t gameovermenu_process_input(game_over_menu_t *game_over_menu, uint8
   return MENU_ACTION_NONE;
 }
 
+menu_action_t gameovermenu_process_mouse_click(game_over_menu_t *game_over_menu, int mouse_x, int mouse_y) {
+  if (game_over_menu == NULL) {
+    return MENU_ACTION_NONE;
+  }
+  
+  if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 300 && mouse_y <= 380) {
+    game_over_menu->selected_option = 0;
+    return MENU_ACTION_RETRY;
+  }
+  
+  if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 400 && mouse_y <= 480) {
+    game_over_menu->selected_option = 1;
+    return MENU_ACTION_MAIN_MENU;
+  }
+  
+  if (mouse_x >= 220 && mouse_x <= 450 && mouse_y >= 500 && mouse_y <= 580) {
+    game_over_menu->selected_option = 2;
+    return MENU_ACTION_EXIT;
+  }
+  
+  return MENU_ACTION_NONE;
+}
+
+void gameovermenu_update_hover(game_over_menu_t *game_over_menu, int mouse_x, int mouse_y) {
+  if (game_over_menu == NULL) {
+    return;
+  }
+  
+  if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 300 && mouse_y <= 380) {
+    game_over_menu->selected_option = 0;
+  } else if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 400 && mouse_y <= 480) {
+    game_over_menu->selected_option = 1;
+  } else if (mouse_x >= 220 && mouse_x <= 450 && mouse_y >= 500 && mouse_y <= 580) {
+    game_over_menu->selected_option = 2;
+  }
+}
+
 void draw_game_over(game_over_menu_t *game_over_menu) {
     if (game_over_menu == NULL) {
         return;
