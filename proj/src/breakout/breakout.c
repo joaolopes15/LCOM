@@ -423,21 +423,16 @@ void handle_all_ball_collisions(breakout_t *breakout) {
       current_ball->yspeed = -current_ball->yspeed;
     }
     
-    // Ball fell off screen - only reset main ball, remove extra balls
+    // Ball fell off screen - mark as inactive
     if (current_ball->y + current_ball->height >= vmi_p.YResolution) {
-      if (ball_idx == 0) { // Main ball
-        breakout->lives--;
-        current_ball->x = breakout->bar->x + (breakout->bar->width / 2) - (current_ball->width / 2);
-        current_ball->y = 485;
-        current_ball->xspeed = 0;
-        current_ball->yspeed = 0;
-        breakout->ball_attached = true;
-      } else { // Extra ball - just remove it
+      if (ball_idx == 0) { // Main ball - mark as inactive but don't reset yet
+        breakout->active_balls[ball_idx] = false;
+      } else { // Extra ball - remove it
         destroy_sprite(current_ball);
         breakout->balls[ball_idx] = NULL;
         breakout->active_balls[ball_idx] = false;
-        continue;
       }
+      continue;
     }
 
     // Bar collision
@@ -496,6 +491,36 @@ void handle_all_ball_collisions(breakout_t *breakout) {
         
         break;
       }
+    }
+  }
+  
+  // Check if all balls are inactive - if so, lose a life and reset
+  bool all_balls_inactive = true;
+  for (int i = 0; i < 5; i++) {
+    if (breakout->active_balls[i]) {
+      all_balls_inactive = false;
+      break;
+    }
+  }
+  
+  if (all_balls_inactive) {
+    breakout->lives--;
+    
+    // Reset main ball position and state
+    breakout->ball->x = breakout->bar->x + (breakout->bar->width / 2) - (breakout->ball->width / 2);
+    breakout->ball->y = 485;
+    breakout->ball->xspeed = 0;
+    breakout->ball->yspeed = 0;
+    breakout->ball_attached = true;
+    breakout->active_balls[0] = true; // Re-activate main ball
+    
+    // Clean up any remaining extra balls
+    for (int i = 1; i < 5; i++) {
+      if (breakout->balls[i] != NULL) {
+        destroy_sprite(breakout->balls[i]);
+        breakout->balls[i] = NULL;
+      }
+      breakout->active_balls[i] = false;
     }
   }
 }
