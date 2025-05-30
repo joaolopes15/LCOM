@@ -4,6 +4,7 @@
 #include "../assets/blue_brick_xpm.h"
 #include "../assets/green_brick_xpm.h"
 #include "../assets/orange_brick_xpm.h"
+#include "../assets/orange_brick_2_xpm.h"
 #include "../assets/red_brick_xpm.h"
 #include "../assets/red_brick_2_xpm.h"
 #include "../assets/yellow_brick_xpm.h"
@@ -53,6 +54,10 @@ breakout_t *breakout_init() {
     breakout->red_animated_bricks[i] = NULL;
   }
 
+  for (int i = 0; i < 12; i++) {
+    breakout->orange_animated_bricks[i] = NULL;
+  }
+
   create_bricks(breakout);
 
   if (breakout->ball == NULL) {
@@ -72,6 +77,7 @@ breakout_t *breakout_init() {
 
 void create_bricks(breakout_t *breakout) {
   xpm_map_t red_brick_xpms[] = {(xpm_map_t)red_brick_xpm, (xpm_map_t)red_brick_2_xpm};
+  xpm_map_t orange_brick_xpms[] = {(xpm_map_t)orange_brick_xpm, (xpm_map_t)orange_brick_2_xpm};
   
   for (int i = 0; i < 12; i++) {
     breakout->bricks[i] = create_sprite((xpm_map_t) red_brick_xpm);
@@ -105,10 +111,20 @@ void create_bricks(breakout_t *breakout) {
       return;
     }
 
+    breakout->orange_animated_bricks[i - 12] = create_animated_sprite(orange_brick_xpms, 2, 10);
+    if (breakout->orange_animated_bricks[i - 12] == NULL) {
+      destroy_sprite(breakout->bricks[i]);
+      free(breakout);
+      return;
+    }
+
     int total_width = 12 * breakout->bricks[i]->width + 9 * 12;
     int start_x = (800 - total_width) / 2;
     breakout->bricks[i]->x = start_x + (i - 12) * (breakout->bricks[i]->width + 10);
     breakout->bricks[i]->y = 130;
+    
+    breakout->orange_animated_bricks[i - 12]->sp->x = breakout->bricks[i]->x;
+    breakout->orange_animated_bricks[i - 12]->sp->y = breakout->bricks[i]->y;
   }
 
   for (int i = 24; i < 36; i++) {
@@ -170,6 +186,17 @@ int draw_bricks(breakout_t *breakout) {
       if (i < 12 && breakout->red_animated_bricks[i] != NULL) {
         animate_sprite_once(breakout->red_animated_bricks[i]);
         if (draw_animated_sprite(breakout->red_animated_bricks[i], 
+                                 breakout->bricks[i]->x, breakout->bricks[i]->y) != 0) {
+          return 1;
+        }
+        
+        breakout->brick_anim_frames[i]--;
+        if (breakout->brick_anim_frames[i] <= 0) {
+          breakout->brick_animating[i] = false;
+        }
+      } else if (i >= 12 && i < 24 && breakout->orange_animated_bricks[i - 12] != NULL) {
+        animate_sprite_once(breakout->orange_animated_bricks[i - 12]);
+        if (draw_animated_sprite(breakout->orange_animated_bricks[i - 12], 
                                  breakout->bricks[i]->x, breakout->bricks[i]->y) != 0) {
           return 1;
         }
@@ -261,6 +288,13 @@ int draw_breakout(breakout_t *breakout) {
       }
     }
     
+    for (int i = 0; i < 12; i++) {
+      if (breakout->orange_animated_bricks[i] != NULL) {
+        destroy_animated_sprite(breakout->orange_animated_bricks[i]);
+        breakout->orange_animated_bricks[i] = NULL;
+      }
+    }
+    
     create_bricks(breakout);
     draw_bricks(breakout);
 
@@ -291,6 +325,12 @@ void destroy_breakout(breakout_t *breakout) {
   for (int i = 0; i < 12; i++) {
     if (breakout->red_animated_bricks[i] != NULL) {
       destroy_animated_sprite(breakout->red_animated_bricks[i]);
+    }
+  }
+
+  for (int i = 0; i < 12; i++) {
+    if (breakout->orange_animated_bricks[i] != NULL) {
+      destroy_animated_sprite(breakout->orange_animated_bricks[i]);
     }
   }
 
@@ -366,6 +406,9 @@ void handle_ball_collisions(breakout_t *breakout) {
       breakout->active_bricks[i] = false;
       
       if (i < 12) {
+        breakout->brick_animating[i] = true;
+        breakout->brick_anim_frames[i] = 30;
+      } else if (i >= 12 && i < 24) {
         breakout->brick_animating[i] = true;
         breakout->brick_anim_frames[i] = 30;
       }
