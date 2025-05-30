@@ -1,10 +1,28 @@
 #ifndef GAMEOVERMENU_H
 #define GAMEOVERMENU_H
 
-#include "../game/game.h"
 #include "../sprite/sprite.h"
+#include "menu_action_enum.h"
 
-void gameovermenu_process_input(game_t *game, uint8_t scancode);
-void gameovermenu_render(game_t *game);
+typedef struct {
+  int selected_option;
+
+  Sprite *gameover_sprite;
+  Sprite *highscore_sprite;
+  Sprite *retry_sprite;
+  Sprite *retryS_sprite;
+  Sprite *exittomenu_sprite;
+  Sprite *exittomenuS_sprite;
+  Sprite *exit_sprite;
+  Sprite *exitS_sprite;
+} game_over_menu_t;
+
+game_over_menu_t *game_over_menu_init();
+
+menu_action_t gameovermenu_process_input(game_over_menu_t *game_over_menu, uint8_t scancode);
+
+void draw_game_over(game_over_menu_t *game_over_menu);
+
+void destroy_game_over(game_over_menu_t *game_over_menu);
 
 #endif

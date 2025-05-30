@@ -10,6 +10,7 @@
 #include "../menus/mainmenu.h"
 #include "../menus/instructionmenu.h"
 #include "../menus/pausemenu.h"
+#include "../menus/gameovermenu.h"
 
 // enum of all possible game states
 typedef enum {
@@ -33,6 +34,7 @@ typedef struct {
   main_menu_t* main_menu;
   instruction_menu_t* instruction_menu;
   pause_menu_t* pause_menu;
+  game_over_menu_t* game_over_menu;
   
   bool key_left_pressed;
   bool key_right_pressed;

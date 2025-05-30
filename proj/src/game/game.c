@@ -28,15 +28,15 @@ game_t *game_init() {
   game->key_down_pressed = false;
   game->key_space_pressed = false;
 
-  game->pause_menu_selected_option = 0;
-  game->game_over_selected_option = 0;
-
   game->mouse_x = 400;
   game->mouse_y = 300;
   game->mouse_target_x = 350;
   game->mouse_control_active = false;
 
   game->breakout = NULL;
+  game->instruction_menu = NULL;
+  game->pause_menu = NULL;
+  game->game_over_menu = NULL;
 
   return game;
 }
@@ -97,15 +97,31 @@ void game_process_input(game_t *game, uint8_t scancode) {
           break;
         case MENU_ACTION_MAIN_MENU:
           game_change_state(game, STATE_MENU);
+          break;
         case MENU_ACTION_NONE:
         default:
           break;
       }
       break;
     }
-    case STATE_GAME_OVER:
-      gameovermenu_process_input(game, scancode);
+    case STATE_GAME_OVER: {
+      menu_action_t action = gameovermenu_process_input(game->game_over_menu, scancode);
+      switch (action) {
+        case MENU_ACTION_START_GAME:
+          game_change_state(game, STATE_PLAYING);
+          break;
+        case MENU_ACTION_MAIN_MENU:
+          game_change_state(game, STATE_MENU);
+          break;
+        case MENU_ACTION_EXIT:
+          game_change_state(game, STATE_EXIT);
+          break;
+        case MENU_ACTION_NONE:
+        default:
+          break;
+      }
       break;
+    }
     case STATE_HOW_TO_PLAY: {
       menu_action_t action = instructionmenu_process_input(game->instruction_menu, scancode);
       switch (action) {
@@ -231,7 +247,8 @@ void game_render(game_t *game) {
       draw_pause_menu(game->pause_menu);
       break;
     case STATE_GAME_OVER:
-      gameovermenu_render(game);
+      clear_screen();
+      draw_game_over(game->game_over_menu);
       break;
     case STATE_HOW_TO_PLAY:
       clear_screen();
@@ -267,6 +284,13 @@ void game_change_state(game_t *game, game_state_t new_state) {
         destroy_pause_menu(game->pause_menu);
         game->pause_menu = NULL;
       }
+      if (game->main_menu == NULL) {
+        game->main_menu = main_menu_init();
+        if (game->main_menu == NULL) {
+          printf("Error initializing main menu\n");
+          game_change_state(game, STATE_EXIT);
+        }
+      }
       break;
 
     case STATE_PLAYING:
@@ -297,6 +321,13 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_GAME_OVER:
+      if (game->game_over_menu == NULL) {
+        game->game_over_menu = game_over_menu_init();
+        if (game->game_over_menu == NULL) {
+          printf("Error initializing game over menu\n");
+          game_change_state(game, STATE_EXIT);
+        }
+      }
       break;
 
     case STATE_HOW_TO_PLAY:
