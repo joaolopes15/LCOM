@@ -3,12 +3,16 @@
 
 #include <lcom/lcf.h>
 #include "../sprite/sprite.h"
+#include "../sprite/animated_sprite.h"
 
 typedef struct {
   Sprite *bar;
   Sprite *ball;
   Sprite *bricks[60];
+  AnimSprite *red_animated_bricks[12];
   bool active_bricks[60];
+  bool brick_animating[60];
+  int brick_anim_frames[60];
   int lives;
   int score;
   bool ball_attached;
