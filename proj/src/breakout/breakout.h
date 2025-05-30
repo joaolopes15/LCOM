@@ -12,6 +12,7 @@ typedef struct {
   AnimSprite *red_animated_bricks[12];
   AnimSprite *orange_animated_bricks[12];
   AnimSprite *yellow_animated_bricks[12];
+  AnimSprite *green_animated_bricks[12];
   bool active_bricks[60];
   bool brick_animating[60];
   int brick_anim_frames[60];
