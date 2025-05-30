@@ -23,6 +23,10 @@ main_menu_t* main_menu_init();
 
 menu_action_t mainmenu_process_input(main_menu_t *main_menu, uint8_t scancode);
 
+menu_action_t mainmenu_process_mouse_click(main_menu_t *main_menu, int mouse_x, int mouse_y);
+
+void mainmenu_update_hover(main_menu_t *main_menu, int mouse_x, int mouse_y);
+
 void draw_main_menu(main_menu_t *main_menu);
 
 void destroy_main_menu(main_menu_t *main_menu);

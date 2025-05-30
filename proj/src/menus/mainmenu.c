@@ -120,6 +120,43 @@ menu_action_t mainmenu_process_input(main_menu_t *main_menu, uint8_t scancode) {
     return MENU_ACTION_NONE;
 }
 
+menu_action_t mainmenu_process_mouse_click(main_menu_t *main_menu, int mouse_x, int mouse_y) {
+    if (main_menu == NULL) {
+        return MENU_ACTION_NONE;
+    }
+    
+    if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 300 && mouse_y <= 380) {
+        main_menu->selected_option = 0;
+        return MENU_ACTION_START_GAME;
+    }
+    
+    if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 400 && mouse_y <= 480) {
+        main_menu->selected_option = 1;
+        return MENU_ACTION_HOW_TO_PLAY;
+    }
+    
+    if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 500 && mouse_y <= 580) {
+        main_menu->selected_option = 2;
+        return MENU_ACTION_EXIT;
+    }
+    
+    return MENU_ACTION_NONE;
+}
+
+void mainmenu_update_hover(main_menu_t *main_menu, int mouse_x, int mouse_y) {
+    if (main_menu == NULL) {
+        return;
+    }
+    
+    if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 300 && mouse_y <= 380) {
+        main_menu->selected_option = 0;
+    } else if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 400 && mouse_y <= 480) {
+        main_menu->selected_option = 1;
+    } else if (mouse_x >= 250 && mouse_x <= 450 && mouse_y >= 500 && mouse_y <= 580) {
+        main_menu->selected_option = 2;
+    }
+}
+
 void draw_main_menu(main_menu_t *main_menu) {
     if (main_menu == NULL) {
         return;
