@@ -7,6 +7,7 @@
 #include "../assets/red_brick_xpm.h"
 #include "../assets/yellow_brick_xpm.h"
 #include "../assets/x2powerup_xpm.h"
+#include "../assets/lives_xpm.h"
 #include "../assets/numbers/number_zero_xpm.h"
 #include "../assets/numbers/number_one_xpm.h"
 #include "../assets/numbers/number_two_xpm.h"
@@ -161,7 +162,7 @@ int draw_bricks(breakout_t *breakout) {
 
 int draw_lives(breakout_t *breakout) {
   for (int i = 0; i < breakout->lives; i++) {
-    if (draw_xpm((xpm_map_t) ball_xpm, (i * 15) + 5, 5) != 0) {
+    if (draw_xpm((xpm_map_t) lives_xpm, (i * 15) + 5, 5) != 0) {
       return 1;
     }
   }
