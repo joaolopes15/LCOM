@@ -27,9 +27,6 @@ typedef struct {
   game_state_t current_state;   // current state of the game
   game_state_t previous_state;  // previous state of the game
 
-  int pause_menu_selected_option; // 0: Continue, 1: Retry, 2: Exit to Menu
-  int game_over_selected_option; // 0: Retry, 1: Exit to Menu 2: Exit
-
   breakout_t* breakout;
   main_menu_t* main_menu;
   instruction_menu_t* instruction_menu;
@@ -42,11 +39,13 @@ typedef struct {
   bool key_down_pressed;
   bool key_space_pressed;
 
-  
   int mouse_x;
   int mouse_y; 
-  int mouse_target_x; // target X position for mouse-controlled movement
-  bool mouse_control_active; // whether mouse control is currently active
+  int mouse_target_x;
+  bool mouse_control_active;
+  
+  Sprite *cursor_sprite;
+  bool cursor_visible;
 
 } game_t;
 

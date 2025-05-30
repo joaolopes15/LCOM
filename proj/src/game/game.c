@@ -1,7 +1,7 @@
 #include "game.h"
 #include "../assets/bar_xpm.h"
 #include "../assets/logo_xpm.h"
-#include "../assets/test_xpm.h"
+#include "../assets/ball_xpm.h"
 #include "../menus/gameovermenu.h"
 #include "../menus/instructionmenu.h"
 #include "../menus/mainmenu.h"
@@ -32,6 +32,14 @@ game_t *game_init() {
   game->mouse_y = 300;
   game->mouse_target_x = 350;
   game->mouse_control_active = false;
+
+  game->cursor_sprite = create_sprite((xpm_map_t) ball_xpm);
+  if (game->cursor_sprite == NULL) {
+    printf("Error creating cursor sprite\n");
+    free(game);
+    return NULL;
+  }
+  game->cursor_visible = true;
 
   game->breakout = NULL;
   game->instruction_menu = NULL;
@@ -156,7 +164,7 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
     return;
 
   game->mouse_x += mouse_packet->delta_x;
-  game->mouse_y += mouse_packet->delta_y;
+  game->mouse_y -= mouse_packet->delta_y;
 
   if (game->mouse_x < 0)
     game->mouse_x = 0;
@@ -179,14 +187,20 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
 
         game->mouse_control_active = true;
       }
+      game->cursor_visible = false;
       break;
 
     case STATE_MENU:
     case STATE_PAUSED:
     case STATE_GAME_OVER:
-    case STATE_EXIT:
     case STATE_HOW_TO_PLAY:
       game->mouse_control_active = false;
+      game->cursor_visible = true;
+      break;
+      
+    case STATE_EXIT:
+      game->mouse_control_active = false;
+      game->cursor_visible = false;
       break;
   }
 }
@@ -271,6 +285,10 @@ void game_render(game_t *game) {
       break;
     case STATE_EXIT:
       break;
+  }
+  
+  if (game->cursor_visible && game->cursor_sprite != NULL) {
+    draw_sprite(game->cursor_sprite, game->mouse_x, game->mouse_y);
   }
 }
 
@@ -369,6 +387,11 @@ void game_change_state(game_t *game, game_state_t new_state) {
 void game_exit(game_t *game) {
   if (game == NULL)
     return;
+
+  if (game->cursor_sprite != NULL) {
+    destroy_sprite(game->cursor_sprite);
+    game->cursor_sprite = NULL;
+  }
 
   free(game);
 }
