@@ -10,7 +10,6 @@
 #include "../assets/menus/exit_xpm.h"
 #include "../assets/menus/background_xpm.h"
 #include "../assets/menus/welcomeBIGGER_xpm.h"
-#include "../drivers/video/video.h"
 
 main_menu_t *main_menu_init() {
     main_menu_t* main_menu = (main_menu_t *) malloc(sizeof(main_menu_t));
@@ -21,6 +20,7 @@ main_menu_t *main_menu_init() {
     }
 
     main_menu->welcome_sprite = NULL;
+    main_menu->to_sprite = NULL;
     main_menu->logo_sprite = NULL;
     main_menu->startS_sprite = NULL;
     main_menu->start_sprite = NULL;
@@ -31,6 +31,12 @@ main_menu_t *main_menu_init() {
 
     main_menu->welcome_sprite = create_sprite((xpm_map_t) welcomeBIGGER_xpm);
     if (main_menu->welcome_sprite == NULL) {
+        destroy_main_menu(main_menu);
+        return NULL;
+    }
+
+    main_menu->to_sprite = create_sprite((xpm_map_t) to_xpm);
+    if (main_menu->to_sprite == NULL) {
         destroy_main_menu(main_menu);
         return NULL;
     }
@@ -122,6 +128,11 @@ void draw_main_menu(main_menu_t *main_menu) {
     if (main_menu->welcome_sprite != NULL) {
         draw_sprite(main_menu->welcome_sprite, 200, 0);
     }
+
+    if (main_menu->to_sprite != NULL) {
+        draw_sprite(main_menu->to_sprite, 470, 20);
+    }
+
     if (main_menu->logo_sprite != NULL) {
         draw_sprite(main_menu->logo_sprite, 270, 100);
     }

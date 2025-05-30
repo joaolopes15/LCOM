@@ -9,24 +9,20 @@ extern vbe_mode_info_t vmi_p;
 int draw_background() {
     xpm_image_t img;
     
-    // Load the XPM with correct type
     uint8_t *map = xpm_load(background4_xpm, XPM_8_8_8_8, &img);
 
     if (map == NULL) {
         return 1;
     }
 
-    // Check if background matches screen resolution
     if (img.width != vmi_p.XResolution || img.height != vmi_p.YResolution) {
         free(map);
         return 1;
     }
 
-    // Get video memory pointer
     uint8_t *video_ptr = (uint8_t *)video_mem[currentDrawBuffer];
     unsigned bytes_per_pixel = (vmi_p.BitsPerPixel + 7) / 8;
     
-    // Copy pixel data directly
     for (unsigned i = 0; i < img.height; i++) {
         for (unsigned j = 0; j < img.width; j++) {
             unsigned src_index = (i * img.width + j) * 4;
@@ -37,7 +33,6 @@ int draw_background() {
             uint8_t blue = map[src_index + 2];
             uint8_t alpha = map[src_index + 3];
             
-            // Handle different color depths
             if (vmi_p.BitsPerPixel == 8) {
                 video_ptr[dst_index] = (red >> 5) << 5 | (green >> 5) << 2 | (blue >> 6);
             }

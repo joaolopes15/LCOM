@@ -5,7 +5,6 @@
 #include "../drivers/video/video.h"
 #include "../sprite/sprite.h"
 
-// Forward declaration of the XPM array
 extern const char *background4_xpm[];
 
 int draw_background();

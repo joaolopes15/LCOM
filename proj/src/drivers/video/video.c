@@ -41,7 +41,7 @@ int(flip)() {
   currentDisplayBuffer = readyBuffer;
   readyBuffer = currentDrawBuffer;
   currentDrawBuffer = temp;
-  
+
   return 0;
 }
 

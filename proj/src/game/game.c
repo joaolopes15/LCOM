@@ -6,6 +6,7 @@
 #include "../menus/instructionmenu.h"
 #include "../menus/mainmenu.h"
 #include "../menus/pausemenu.h"
+#include "../menus/menu_action_enum.h"
 #include <stdlib.h>
 
 // TODO: put all scancodes in a separate header file
@@ -94,9 +95,17 @@ void game_process_input(game_t *game, uint8_t scancode) {
     case STATE_GAME_OVER:
       gameovermenu_process_input(game, scancode);
       break;
-    case STATE_HOW_TO_PLAY:
-      instructionmenu_process_input(game, scancode);
-      break;
+    case STATE_HOW_TO_PLAY: {
+      menu_action_t action = instructionmenu_process_input(game->instruction_menu, scancode);
+      switch (action) {
+        case MENU_ACTION_MAIN_MENU:
+          game_change_state(game, STATE_MENU);
+          break;
+        case MENU_ACTION_NONE:
+        default:
+          break;
+      }
+    } break;
 
     case STATE_EXIT:
       break;
@@ -213,9 +222,9 @@ void game_render(game_t *game) {
       gameovermenu_render(game);
       break;
     case STATE_HOW_TO_PLAY:
-      instructionmenu_render(game);
+      clear_screen();
+      draw_instruction_menu(game->instruction_menu);
       break;
-
     case STATE_PLAYING:
       clear_screen();
       draw_breakout(game->breakout);
@@ -261,6 +270,13 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_HOW_TO_PLAY:
+      if (game->instruction_menu == NULL) {
+        game->instruction_menu = instruction_menu_init();
+        if (game->instruction_menu == NULL) {
+          printf("Error initializing instruction menu\n");
+          game_change_state(game, STATE_EXIT);
+        }
+      }
       break;
 
     case STATE_EXIT:

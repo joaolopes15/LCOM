@@ -8,6 +8,7 @@
 #include "../sprite/sprite.h"
 #include "../breakout/breakout.h"
 #include "../menus/mainmenu.h"
+#include "../menus/instructionmenu.h"
 
 // enum of all possible game states
 typedef enum {
@@ -29,6 +30,7 @@ typedef struct {
 
   breakout_t* breakout;
   main_menu_t* main_menu;
+  instruction_menu_t* instruction_menu;
   
   bool key_left_pressed;
   bool key_right_pressed;

@@ -3,18 +3,13 @@
 
 #include "../sprite/sprite.h"
 #include "background.h"
-
-typedef enum {
-  MENU_ACTION_NONE,
-  MENU_ACTION_START_GAME,
-  MENU_ACTION_HOW_TO_PLAY,
-  MENU_ACTION_EXIT
-} menu_action_t;
+#include "menu_action_enum.h"
 
 typedef struct {
   int selected_option;
 
   Sprite *welcome_sprite;
+  Sprite *to_sprite;
   Sprite *logo_sprite;
   Sprite *startS_sprite;
   Sprite *start_sprite;
