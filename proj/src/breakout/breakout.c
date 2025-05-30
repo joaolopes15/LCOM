@@ -59,15 +59,13 @@ breakout_t *breakout_init() {
   breakout->ball->yspeed = 0;
   breakout->ball_attached = true;
 
-  // Initialize balls array
-  breakout->balls[0] = breakout->ball; // Main ball is first in array
+  breakout->balls[0] = breakout->ball;
   breakout->active_balls[0] = true;
   for (int i = 1; i < 5; i++) {
     breakout->balls[i] = NULL;
     breakout->active_balls[i] = false;
   }
 
-  // Initialize powerups
   for (int i = 0; i < 10; i++) {
     breakout->powerups[i] = NULL;
     breakout->active_powerups[i] = false;
@@ -217,27 +215,22 @@ int draw_powerup(breakout_t *breakout){
 void spawn_powerup(breakout_t *breakout, int x, int y) {
   if (breakout == NULL) return;
   
-  // Find an empty slot for the powerup
   for (int i = 0; i < 10; i++) {
     if (!breakout->active_powerups[i]) {
       breakout->powerups[i] = create_sprite((xpm_map_t) x2powerup_xpm);
       if (breakout->powerups[i] != NULL) {
-        // Set position - randomize x position if not specified
         if (x < 0) {
-          // Random x position between 50 and 750 (to keep within screen bounds)
           breakout->powerups[i]->x = 50 + (rand() % 701);
         } else {
           breakout->powerups[i]->x = x;
         }
         
         if (y < 0) {
-          // Random y position between bricks (220) and bar (500)
           breakout->powerups[i]->y = 250 + (rand() % 200);
         } else {
           breakout->powerups[i]->y = y;
         }
         
-        // Set downward movement speed
         breakout->powerups[i]->yspeed = 2;
         breakout->active_powerups[i] = true;
         break;
@@ -251,10 +244,8 @@ void update_powerups(breakout_t *breakout) {
   
   for (int i = 0; i < 10; i++) {
     if (breakout->active_powerups[i] && breakout->powerups[i] != NULL) {
-      // Move powerup down
       breakout->powerups[i]->y += breakout->powerups[i]->yspeed;
       
-      // Remove powerup if it goes off screen (below bar area)
       if (breakout->powerups[i]->y > 550) {
         destroy_sprite(breakout->powerups[i]);
         breakout->powerups[i] = NULL;
@@ -279,12 +270,10 @@ int draw_breakout(breakout_t *breakout) {
 
   draw_score(breakout);
 
-  // Update and draw powerups
   update_powerups(breakout);
   handle_powerup_collisions(breakout);
   draw_powerup(breakout);
 
-  // Draw all active balls
   for (int i = 0; i < 5; i++) {
     if (breakout->active_balls[i] && breakout->balls[i] != NULL) {
       if (draw_sprite(breakout->balls[i], breakout->balls[i]->x, breakout->balls[i]->y) != 0) {
@@ -319,19 +308,15 @@ void handle_powerup_collisions(breakout_t *breakout) {
   
   for (int i = 0; i < 10; i++) {
     if (breakout->active_powerups[i] && breakout->powerups[i] != NULL) {
-      // Check collision between powerup and bar
       if (breakout->powerups[i]->y + breakout->powerups[i]->height >= breakout->bar->y &&
           breakout->powerups[i]->y <= breakout->bar->y + breakout->bar->height &&
           breakout->powerups[i]->x + breakout->powerups[i]->width >= breakout->bar->x &&
           breakout->powerups[i]->x <= breakout->bar->x + breakout->bar->width) {
         
-        // Powerup collected! Apply x2 ball effect
-        breakout->score += 500; // Bonus points for collecting powerup
+        breakout->score += 500;
         
-        // Spawn an extra ball (x2 effect)
         spawn_extra_ball(breakout);
         
-        // Remove the powerup
         destroy_sprite(breakout->powerups[i]);
         breakout->powerups[i] = NULL;
         breakout->active_powerups[i] = false;
@@ -343,17 +328,14 @@ void handle_powerup_collisions(breakout_t *breakout) {
 void spawn_extra_ball(breakout_t *breakout) {
   if (breakout == NULL) return;
   
-  // First, collect all active balls to randomly select from
   Sprite *active_ball_list[5];
   int active_count = 0;
   
-  // Check main ball (index 0)
   if (breakout->ball != NULL) {
     active_ball_list[active_count] = breakout->ball;
     active_count++;
   }
   
-  // Check additional balls (indices 1-4)
   for (int j = 1; j < 5; j++) {
     if (breakout->active_balls[j] && breakout->balls[j] != NULL) {
       active_ball_list[active_count] = breakout->balls[j];
@@ -361,29 +343,22 @@ void spawn_extra_ball(breakout_t *breakout) {
     }
   }
   
-  // If no active balls, can't spawn
   if (active_count == 0) return;
   
-  // Randomly select one of the active balls as the source
   int source_index = rand() % active_count;
   Sprite *source_ball = active_ball_list[source_index];
   
-  // Find an empty slot for the new ball
   for (int i = 1; i < 5; i++) {
     if (!breakout->active_balls[i]) {
       breakout->balls[i] = create_sprite((xpm_map_t) ball_xpm);
       if (breakout->balls[i] != NULL) {
-        // Position the new ball at the same location as the randomly selected ball
         breakout->balls[i]->x = source_ball->x;
         breakout->balls[i]->y = source_ball->y;
         
-        // Give it a different speed direction (slightly angled)
         if (source_ball->xspeed != 0 || source_ball->yspeed != 0) {
-          // If source ball is moving, give new ball a different angle
           breakout->balls[i]->xspeed = -source_ball->xspeed + (rand() % 3 - 1);
           breakout->balls[i]->yspeed = source_ball->yspeed + (rand() % 3 - 1);
         } else {
-          // If source ball is stationary, give new ball initial movement
           breakout->balls[i]->xspeed = 2 + (rand() % 3);
           breakout->balls[i]->yspeed = -3;
         }
@@ -410,14 +385,12 @@ void destroy_breakout(breakout_t *breakout) {
     }
   }
 
-  // Clean up powerups
   for (int i = 0; i < 10; i++) {
     if (breakout->powerups[i] != NULL) {
       destroy_sprite(breakout->powerups[i]);
     }
   }
 
-  // Clean up all balls
   for (int i = 0; i < 5; i++) {
     if (breakout->balls[i] != NULL) {
       destroy_sprite(breakout->balls[i]);
@@ -432,7 +405,6 @@ void handle_all_ball_collisions(breakout_t *breakout) {
     return;
   }
 
-  // Handle collisions for all active balls
   for (int ball_idx = 0; ball_idx < 5; ball_idx++) {
     if (!breakout->active_balls[ball_idx] || breakout->balls[ball_idx] == NULL) {
       continue;
@@ -440,7 +412,6 @@ void handle_all_ball_collisions(breakout_t *breakout) {
 
     Sprite *current_ball = breakout->balls[ball_idx];
 
-    // Wall collisions
     if (current_ball->x <= 0 || current_ball->x + current_ball->width >= vmi_p.XResolution) {
       current_ball->xspeed = -current_ball->xspeed;
     }
@@ -448,11 +419,10 @@ void handle_all_ball_collisions(breakout_t *breakout) {
       current_ball->yspeed = -current_ball->yspeed;
     }
     
-    // Ball fell off screen - mark as inactive
     if (current_ball->y + current_ball->height >= vmi_p.YResolution) {
-      if (ball_idx == 0) { // Main ball - mark as inactive but don't reset yet
+      if (ball_idx == 0) {
         breakout->active_balls[ball_idx] = false;
-      } else { // Extra ball - remove it
+      } else {
         destroy_sprite(current_ball);
         breakout->balls[ball_idx] = NULL;
         breakout->active_balls[ball_idx] = false;
@@ -460,7 +430,6 @@ void handle_all_ball_collisions(breakout_t *breakout) {
       continue;
     }
 
-    // Bar collision
     if (current_ball->y + current_ball->height >= breakout->bar->y &&
         current_ball->y <= breakout->bar->y + breakout->bar->height &&
         current_ball->x + current_ball->width >= breakout->bar->x &&
@@ -487,7 +456,6 @@ void handle_all_ball_collisions(breakout_t *breakout) {
       }
     }
 
-    // Brick collisions
     for (int i = 0; i < 60; i++) {
       if (!breakout->active_bricks[i])
         continue;
@@ -508,7 +476,6 @@ void handle_all_ball_collisions(breakout_t *breakout) {
         breakout->score += 100;
         breakout->active_bricks[i] = false;
         
-        // 20% chance to spawn a powerup when a brick is destroyed
         if ((rand() % 100) < 20) {
           spawn_powerup(breakout, breakout->bricks[i]->x + breakout->bricks[i]->width / 2, 
                        breakout->bricks[i]->y + breakout->bricks[i]->height);
@@ -519,7 +486,6 @@ void handle_all_ball_collisions(breakout_t *breakout) {
     }
   }
   
-  // Check if all balls are inactive - if so, lose a life and reset
   bool all_balls_inactive = true;
   for (int i = 0; i < 5; i++) {
     if (breakout->active_balls[i]) {
@@ -531,15 +497,13 @@ void handle_all_ball_collisions(breakout_t *breakout) {
   if (all_balls_inactive) {
     breakout->lives--;
     
-    // Reset main ball position and state
     breakout->ball->x = breakout->bar->x + (breakout->bar->width / 2) - (breakout->ball->width / 2);
     breakout->ball->y = 485;
     breakout->ball->xspeed = 0;
     breakout->ball->yspeed = 0;
     breakout->ball_attached = true;
-    breakout->active_balls[0] = true; // Re-activate main ball
+    breakout->active_balls[0] = true;
     
-    // Clean up any remaining extra balls
     for (int i = 1; i < 5; i++) {
       if (breakout->balls[i] != NULL) {
         destroy_sprite(breakout->balls[i]);

@@ -305,7 +305,6 @@ void game_update(game_t *game) {
           move_bar_with_ball_mouse(game->breakout, game->mouse_target_x, game->breakout->bar->y, 100);
         }
         if (game->key_space_pressed) {
-          // Launch main ball if attached
           if (game->breakout->ball_attached) {
             game->breakout->ball->xspeed = 0;
             game->breakout->ball->yspeed = -3;
@@ -316,7 +315,6 @@ void game_update(game_t *game) {
           game_change_state(game, STATE_GAME_OVER);
         }
         if (!game->breakout->ball_attached) {
-          // Move all active balls
           for (int i = 0; i < 5; i++) {
             if (game->breakout->active_balls[i] && game->breakout->balls[i] != NULL) {
               game->breakout->balls[i]->x += game->breakout->balls[i]->xspeed;

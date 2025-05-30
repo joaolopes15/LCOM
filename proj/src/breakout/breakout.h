@@ -7,10 +7,10 @@
 typedef struct {
   Sprite *bar;
   Sprite *ball;
-  Sprite *balls[5];  // Support up to 5 balls for x2 powerup
+  Sprite *balls[5];
   bool active_balls[5];
   Sprite *bricks[60];
-  Sprite *powerups[10];  // Support up to 10 powerups
+  Sprite *powerups[10];
   bool active_powerups[10];
   bool active_bricks[60];
   int lives;
