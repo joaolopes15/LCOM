@@ -1,10 +1,10 @@
 #include "video.h"
 #include <lcom/lcf.h>
 
-static void *video_mem[3];
-static int currentDrawBuffer = 0;
-static int currentDisplayBuffer = 1;
-static int readyBuffer = 2;
+void *video_mem[3];
+int currentDrawBuffer = 0;
+int currentDisplayBuffer = 1;
+int readyBuffer = 2;
 
 int(set_mode)(uint16_t mode) {
   reg86_t reg86;
@@ -31,7 +31,6 @@ int(flip)() {
   reg86.intno = 0x10;
   reg86.ah = 0x4F;
   reg86.al = 0x07;
-  reg86.cx = 0;
   reg86.dx = readyBuffer * vmi_p.YResolution;
 
   if (sys_int86(&reg86) != 0) {
@@ -42,7 +41,7 @@ int(flip)() {
   currentDisplayBuffer = readyBuffer;
   readyBuffer = currentDrawBuffer;
   currentDrawBuffer = temp;
-  
+
   return 0;
 }
 

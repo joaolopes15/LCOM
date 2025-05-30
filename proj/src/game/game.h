@@ -7,6 +7,10 @@
 #include "../drivers/mouse/mouse.h"
 #include "../sprite/sprite.h"
 #include "../breakout/breakout.h"
+#include "../menus/mainmenu.h"
+#include "../menus/instructionmenu.h"
+#include "../menus/pausemenu.h"
+#include "../menus/gameovermenu.h"
 
 // enum of all possible game states
 typedef enum {
@@ -14,13 +18,23 @@ typedef enum {
   STATE_PLAYING,    // playing state
   STATE_PAUSED,     // paused state
   STATE_GAME_OVER,  // game over state
+  STATE_HOW_TO_PLAY, // how to play state
   STATE_EXIT        // exit state to terminate the game
 } game_state_t;
 
 // game structure that holds all game-related information
 typedef struct {
   game_state_t current_state;   // current state of the game
+  game_state_t previous_state;  // previous state of the game
+
+  int pause_menu_selected_option; // 0: Continue, 1: Retry, 2: Exit to Menu
+  int game_over_selected_option; // 0: Retry, 1: Exit to Menu 2: Exit
+
   breakout_t* breakout;
+  main_menu_t* main_menu;
+  instruction_menu_t* instruction_menu;
+  pause_menu_t* pause_menu;
+  game_over_menu_t* game_over_menu;
   
   bool key_left_pressed;
   bool key_right_pressed;

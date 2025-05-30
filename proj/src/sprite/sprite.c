@@ -33,7 +33,6 @@ void destroy_sprite(Sprite *sprite) {
         }
         free(sprite);
     }
-    sprite = NULL;
 }
 
 int draw_sprite(Sprite *sprite, uint16_t x, uint16_t y) {
