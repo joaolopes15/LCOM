@@ -6,6 +6,8 @@
 #include "../assets/orange_brick_xpm.h"
 #include "../assets/red_brick_xpm.h"
 #include "../assets/yellow_brick_xpm.h"
+#include "../assets/x2powerup_xpm.h"
+#include "../assets/lives_xpm.h"
 #include "../assets/numbers/number_zero_xpm.h"
 #include "../assets/numbers/number_one_xpm.h"
 #include "../assets/numbers/number_two_xpm.h"
@@ -19,6 +21,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 breakout_t *breakout_init() {
   breakout_t *breakout = (breakout_t *) malloc(sizeof(breakout_t));
@@ -56,6 +59,18 @@ breakout_t *breakout_init() {
   breakout->ball->xspeed = 0;
   breakout->ball->yspeed = 0;
   breakout->ball_attached = true;
+
+  breakout->balls[0] = breakout->ball;
+  breakout->active_balls[0] = true;
+  for (int i = 1; i < 5; i++) {
+    breakout->balls[i] = NULL;
+    breakout->active_balls[i] = false;
+  }
+
+  for (int i = 0; i < 10; i++) {
+    breakout->powerups[i] = NULL;
+    breakout->active_powerups[i] = false;
+  }
 
   return breakout;
 }
@@ -147,7 +162,7 @@ int draw_bricks(breakout_t *breakout) {
 
 int draw_lives(breakout_t *breakout) {
   for (int i = 0; i < breakout->lives; i++) {
-    if (draw_xpm((xpm_map_t) ball_xpm, (i * 15) + 5, 5) != 0) {
+    if (draw_xpm((xpm_map_t) lives_xpm, (i * 15) + 5, 5) != 0) {
       return 1;
     }
   }
@@ -187,6 +202,60 @@ int draw_score(breakout_t *breakout) {
   return 0;
 }
 
+int draw_powerup(breakout_t *breakout){
+  for (int i = 0; i < 10; i++) {
+    if (breakout->active_powerups[i] && breakout->powerups[i] != NULL) {
+      if (draw_sprite(breakout->powerups[i], breakout->powerups[i]->x, breakout->powerups[i]->y) != 0) {
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+
+void spawn_powerup(breakout_t *breakout, int x, int y) {
+  if (breakout == NULL) return;
+  
+  for (int i = 0; i < 10; i++) {
+    if (!breakout->active_powerups[i]) {
+      breakout->powerups[i] = create_sprite((xpm_map_t) x2powerup_xpm);
+      if (breakout->powerups[i] != NULL) {
+        if (x < 0) {
+          breakout->powerups[i]->x = 50 + (rand() % 701);
+        } else {
+          breakout->powerups[i]->x = x;
+        }
+        
+        if (y < 0) {
+          breakout->powerups[i]->y = 250 + (rand() % 200);
+        } else {
+          breakout->powerups[i]->y = y;
+        }
+        
+        breakout->powerups[i]->yspeed = 2;
+        breakout->active_powerups[i] = true;
+        break;
+      }
+    }
+  }
+}
+
+void update_powerups(breakout_t *breakout) {
+  if (breakout == NULL) return;
+  
+  for (int i = 0; i < 10; i++) {
+    if (breakout->active_powerups[i] && breakout->powerups[i] != NULL) {
+      breakout->powerups[i]->y += breakout->powerups[i]->yspeed;
+      
+      if (breakout->powerups[i]->y > 550) {
+        destroy_sprite(breakout->powerups[i]);
+        breakout->powerups[i] = NULL;
+        breakout->active_powerups[i] = false;
+      }
+    }
+  }
+}
+
 int draw_breakout(breakout_t *breakout) {
   if (breakout == NULL || breakout->bar == NULL || breakout->ball == NULL) {
     return 1;
@@ -202,8 +271,16 @@ int draw_breakout(breakout_t *breakout) {
 
   draw_score(breakout);
 
-  if (draw_sprite(breakout->ball, breakout->ball->x, breakout->ball->y) != 0) {
-    return 1;
+  update_powerups(breakout);
+  handle_powerup_collisions(breakout);
+  draw_powerup(breakout);
+
+  for (int i = 0; i < 5; i++) {
+    if (breakout->active_balls[i] && breakout->balls[i] != NULL) {
+      if (draw_sprite(breakout->balls[i], breakout->balls[i]->x, breakout->balls[i]->y) != 0) {
+        return 1;
+      }
+    }
   }
 
   int count = 0;
@@ -227,6 +304,73 @@ int draw_breakout(breakout_t *breakout) {
   return 0;
 }
 
+void handle_powerup_collisions(breakout_t *breakout) {
+  if (breakout == NULL || breakout->bar == NULL) return;
+  
+  for (int i = 0; i < 10; i++) {
+    if (breakout->active_powerups[i] && breakout->powerups[i] != NULL) {
+      if (breakout->powerups[i]->y + breakout->powerups[i]->height >= breakout->bar->y &&
+          breakout->powerups[i]->y <= breakout->bar->y + breakout->bar->height &&
+          breakout->powerups[i]->x + breakout->powerups[i]->width >= breakout->bar->x &&
+          breakout->powerups[i]->x <= breakout->bar->x + breakout->bar->width) {
+        
+        breakout->score += 500;
+        
+        spawn_extra_ball(breakout);
+        
+        destroy_sprite(breakout->powerups[i]);
+        breakout->powerups[i] = NULL;
+        breakout->active_powerups[i] = false;
+      }
+    }
+  }
+}
+
+void spawn_extra_ball(breakout_t *breakout) {
+  if (breakout == NULL) return;
+  
+  Sprite *active_ball_list[5];
+  int active_count = 0;
+  
+  if (breakout->ball != NULL) {
+    active_ball_list[active_count] = breakout->ball;
+    active_count++;
+  }
+  
+  for (int j = 1; j < 5; j++) {
+    if (breakout->active_balls[j] && breakout->balls[j] != NULL) {
+      active_ball_list[active_count] = breakout->balls[j];
+      active_count++;
+    }
+  }
+  
+  if (active_count == 0) return;
+  
+  int source_index = rand() % active_count;
+  Sprite *source_ball = active_ball_list[source_index];
+  
+  for (int i = 1; i < 5; i++) {
+    if (!breakout->active_balls[i]) {
+      breakout->balls[i] = create_sprite((xpm_map_t) ball_xpm);
+      if (breakout->balls[i] != NULL) {
+        breakout->balls[i]->x = source_ball->x;
+        breakout->balls[i]->y = source_ball->y;
+        
+        if (source_ball->xspeed != 0 || source_ball->yspeed != 0) {
+          breakout->balls[i]->xspeed = -source_ball->xspeed + (rand() % 3 - 1);
+          breakout->balls[i]->yspeed = source_ball->yspeed + (rand() % 3 - 1);
+        } else {
+          breakout->balls[i]->xspeed = 2 + (rand() % 3);
+          breakout->balls[i]->yspeed = -3;
+        }
+        
+        breakout->active_balls[i] = true;
+        break;
+      }
+    }
+  }
+}
+
 void destroy_breakout(breakout_t *breakout) {
   if (breakout == NULL) {
     return;
@@ -242,77 +386,131 @@ void destroy_breakout(breakout_t *breakout) {
     }
   }
 
-  if (breakout->ball != NULL) {
-    destroy_sprite(breakout->ball);
+  for (int i = 0; i < 10; i++) {
+    if (breakout->powerups[i] != NULL) {
+      destroy_sprite(breakout->powerups[i]);
+    }
+  }
+
+  for (int i = 0; i < 5; i++) {
+    if (breakout->balls[i] != NULL) {
+      destroy_sprite(breakout->balls[i]);
+    }
   }
 
   free(breakout);
 }
 
-void handle_ball_collisions(breakout_t *breakout) {
-  if (breakout == NULL || breakout->ball == NULL || breakout->bar == NULL) {
+void handle_all_ball_collisions(breakout_t *breakout) {
+  if (breakout == NULL || breakout->bar == NULL) {
     return;
   }
 
-  if (breakout->ball->x <= 0 || breakout->ball->x + breakout->ball->width >= vmi_p.XResolution) {
-    breakout->ball->xspeed = -breakout->ball->xspeed;
+  for (int ball_idx = 0; ball_idx < 5; ball_idx++) {
+    if (!breakout->active_balls[ball_idx] || breakout->balls[ball_idx] == NULL) {
+      continue;
+    }
+
+    Sprite *current_ball = breakout->balls[ball_idx];
+
+    if (current_ball->x <= 0 || current_ball->x + current_ball->width >= vmi_p.XResolution) {
+      current_ball->xspeed = -current_ball->xspeed;
+    }
+    if (current_ball->y <= 0) {
+      current_ball->yspeed = -current_ball->yspeed;
+    }
+    
+    if (current_ball->y + current_ball->height >= vmi_p.YResolution) {
+      if (ball_idx == 0) {
+        breakout->active_balls[ball_idx] = false;
+      } else {
+        destroy_sprite(current_ball);
+        breakout->balls[ball_idx] = NULL;
+        breakout->active_balls[ball_idx] = false;
+      }
+      continue;
+    }
+
+    if (current_ball->y + current_ball->height >= breakout->bar->y &&
+        current_ball->y <= breakout->bar->y + breakout->bar->height &&
+        current_ball->x + current_ball->width >= breakout->bar->x &&
+        current_ball->x <= breakout->bar->x + breakout->bar->width) {
+      
+      int ball_center_x = current_ball->x + current_ball->width / 2;
+      int bar_center_x = breakout->bar->x + breakout->bar->width / 2;
+      
+      float relative_hit = (float)(ball_center_x - bar_center_x) / (breakout->bar->width / 2);
+      
+      if (relative_hit < -1.0f) relative_hit = -1.0f;
+      if (relative_hit > 1.0f) relative_hit = 1.0f;
+      
+      float current_speed = sqrt(current_ball->xspeed * current_ball->xspeed + 
+                                current_ball->yspeed * current_ball->yspeed);
+      
+      float angle = relative_hit * (M_PI / 3.0f);
+      
+      current_ball->xspeed = (int)(current_speed * sin(angle));
+      current_ball->yspeed = -(int)(current_speed * cos(angle));
+      
+      if (current_ball->yspeed > -3) {
+        current_ball->yspeed = -3;
+      }
+    }
+
+    for (int i = 0; i < 60; i++) {
+      if (!breakout->active_bricks[i])
+        continue;
+
+      if (current_ball->y <= breakout->bricks[i]->y + breakout->bricks[i]->height &&
+          current_ball->y + current_ball->height >= breakout->bricks[i]->y &&
+          current_ball->x + current_ball->width >= breakout->bricks[i]->x &&
+          current_ball->x <= breakout->bricks[i]->x + breakout->bricks[i]->width) {
+        
+        if (current_ball->y + current_ball->height - current_ball->yspeed <= breakout->bricks[i]->y ||
+            current_ball->y - current_ball->yspeed >= breakout->bricks[i]->y + breakout->bricks[i]->height) {
+          current_ball->yspeed = -current_ball->yspeed;
+        }
+        else {
+          current_ball->xspeed = -current_ball->xspeed;
+        }
+        
+        breakout->score += 100;
+        breakout->active_bricks[i] = false;
+        
+        if ((rand() % 100) < 20) {
+          spawn_powerup(breakout, breakout->bricks[i]->x + breakout->bricks[i]->width / 2, 
+                       breakout->bricks[i]->y + breakout->bricks[i]->height);
+        }
+        
+        break;
+      }
+    }
   }
-  if (breakout->ball->y <= 0) {
-    breakout->ball->yspeed = -breakout->ball->yspeed;
+  
+  bool all_balls_inactive = true;
+  for (int i = 0; i < 5; i++) {
+    if (breakout->active_balls[i]) {
+      all_balls_inactive = false;
+      break;
+    }
   }
-  if (breakout->ball->y + breakout->ball->height >= vmi_p.YResolution) {
+  
+  if (all_balls_inactive) {
     breakout->lives--;
+    
     breakout->ball->x = breakout->bar->x + (breakout->bar->width / 2) - (breakout->ball->width / 2);
     breakout->ball->y = 485;
     breakout->ball->xspeed = 0;
     breakout->ball->yspeed = 0;
     breakout->ball_attached = true;
-  }
-
-  if (breakout->ball->y + breakout->ball->height >= breakout->bar->y &&
-      breakout->ball->y <= breakout->bar->y + breakout->bar->height &&
-      breakout->ball->x + breakout->ball->width >= breakout->bar->x &&
-      breakout->ball->x <= breakout->bar->x + breakout->bar->width) {
+    breakout->active_balls[0] = true;
     
-    int ball_center_x = breakout->ball->x + breakout->ball->width / 2;
-    int bar_center_x = breakout->bar->x + breakout->bar->width / 2;
-    
-    float relative_hit = (float)(ball_center_x - bar_center_x) / (breakout->bar->width / 2);
-    
-    if (relative_hit < -1.0f) relative_hit = -1.0f;
-    if (relative_hit > 1.0f) relative_hit = 1.0f;
-    
-    float current_speed = sqrt(breakout->ball->xspeed * breakout->ball->xspeed + 
-                              breakout->ball->yspeed * breakout->ball->yspeed);
-    
-    float angle = relative_hit * (M_PI / 3.0f);
-    
-    breakout->ball->xspeed = (int)(current_speed * sin(angle));
-    breakout->ball->yspeed = -(int)(current_speed * cos(angle));
-    
-    if (breakout->ball->yspeed > -3) {
-      breakout->ball->yspeed = -3;
-    }
-  }
-
-  for (int i = 0; i < 60; i++) {
-    if (!breakout->active_bricks[i])
-      continue;
-
-    if (breakout->ball->y <= breakout->bricks[i]->y + breakout->bricks[i]->height &&
-        breakout->ball->y + breakout->ball->height >= breakout->bricks[i]->y &&
-        breakout->ball->x + breakout->ball->width >= breakout->bricks[i]->x &&
-        breakout->ball->x <= breakout->bricks[i]->x + breakout->bricks[i]->width) {
-      if (breakout->ball->y + breakout->ball->height - breakout->ball->yspeed <= breakout->bricks[i]->y ||
-          breakout->ball->y - breakout->ball->yspeed >= breakout->bricks[i]->y + breakout->bricks[i]->height) {
-        breakout->ball->yspeed = -breakout->ball->yspeed;
+    for (int i = 1; i < 5; i++) {
+      if (breakout->balls[i] != NULL) {
+        destroy_sprite(breakout->balls[i]);
+        breakout->balls[i] = NULL;
       }
-      else {
-        breakout->ball->xspeed = -breakout->ball->xspeed;
-      }
-      breakout->score += 100;
-      breakout->active_bricks[i] = false;
-      break;
+      breakout->active_balls[i] = false;
     }
   }
 }

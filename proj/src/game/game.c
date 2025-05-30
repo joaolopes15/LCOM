@@ -8,6 +8,7 @@
 #include "../menus/menu_action_enum.h"
 #include "../menus/pausemenu.h"
 #include <stdlib.h>
+#include <time.h>
 
 // TODO: put all scancodes in a separate header file
 // initialize the game structure and set initial state
@@ -19,6 +20,8 @@ game_t *game_init() {
     return NULL;
   }
 
+  srand(time(NULL));
+  
   game->main_menu = main_menu_init();
   game->current_state = STATE_MENU;
 
@@ -302,18 +305,24 @@ void game_update(game_t *game) {
           move_bar_with_ball_mouse(game->breakout, game->mouse_target_x, game->breakout->bar->y, 100);
         }
         if (game->key_space_pressed) {
-          game->breakout->ball->xspeed = 0;
-          game->breakout->ball->yspeed = -3;
-          game->breakout->ball_attached = false;
+          if (game->breakout->ball_attached) {
+            game->breakout->ball->xspeed = 0;
+            game->breakout->ball->yspeed = -3;
+            game->breakout->ball_attached = false;
+          }
         }
         if (game->breakout->lives == 0) {
           game_change_state(game, STATE_GAME_OVER);
         }
         if (!game->breakout->ball_attached) {
-          game->breakout->ball->x += game->breakout->ball->xspeed;
-          game->breakout->ball->y += game->breakout->ball->yspeed;
+          for (int i = 0; i < 5; i++) {
+            if (game->breakout->active_balls[i] && game->breakout->balls[i] != NULL) {
+              game->breakout->balls[i]->x += game->breakout->balls[i]->xspeed;
+              game->breakout->balls[i]->y += game->breakout->balls[i]->yspeed;
+            }
+          }
         }
-        handle_ball_collisions(game->breakout);
+        handle_all_ball_collisions(game->breakout);
       }
       break;
 
