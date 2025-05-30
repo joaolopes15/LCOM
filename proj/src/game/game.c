@@ -175,6 +175,26 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
   if (game->mouse_y > vmi_p.YResolution)
     game->mouse_y = vmi_p.YResolution;
 
+  switch (game->current_state) {
+    case STATE_MENU:
+      if (game->main_menu != NULL) {
+        mainmenu_update_hover(game->main_menu, game->mouse_x, game->mouse_y);
+      }
+      break;
+    case STATE_PAUSED:
+      if (game->pause_menu != NULL) {
+        pausemenu_update_hover(game->pause_menu, game->mouse_x, game->mouse_y);
+      }
+      break;
+    case STATE_GAME_OVER:
+      if (game->game_over_menu != NULL) {
+        gameovermenu_update_hover(game->game_over_menu, game->mouse_x, game->mouse_y);
+      }
+      break;
+    default:
+      break;
+  }
+
   if (mouse_packet->lb) {
     menu_action_t action = MENU_ACTION_NONE;
     
@@ -192,6 +212,11 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
       case STATE_GAME_OVER:
         if (game->game_over_menu != NULL) {
           action = gameovermenu_process_mouse_click(game->game_over_menu, game->mouse_x, game->mouse_y);
+        }
+        break;
+      case STATE_HOW_TO_PLAY:
+        if (game->instruction_menu != NULL) {
+          action = instructionmenu_process_mouse_click(game->instruction_menu, game->mouse_x, game->mouse_y);
         }
         break;
       default:
