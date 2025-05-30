@@ -1,7 +1,7 @@
 #include "game.h"
+#include "../assets/ball_xpm.h"
 #include "../assets/bar_xpm.h"
 #include "../assets/logo_xpm.h"
-#include "../assets/ball_xpm.h"
 #include "../menus/gameovermenu.h"
 #include "../menus/instructionmenu.h"
 #include "../menus/mainmenu.h"
@@ -197,7 +197,7 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
       game->mouse_control_active = false;
       game->cursor_visible = true;
       break;
-      
+
     case STATE_EXIT:
       game->mouse_control_active = false;
       game->cursor_visible = false;
@@ -286,7 +286,7 @@ void game_render(game_t *game) {
     case STATE_EXIT:
       break;
   }
-  
+
   if (game->cursor_visible && game->cursor_sprite != NULL) {
     draw_sprite(game->cursor_sprite, game->mouse_x, game->mouse_y);
   }
@@ -301,6 +301,7 @@ void game_change_state(game_t *game, game_state_t new_state) {
 
   switch (new_state) {
     case STATE_MENU:
+      game->cursor_visible = true;
       if (game->breakout != NULL) {
         destroy_breakout(game->breakout);
         game->breakout = NULL;
@@ -327,6 +328,7 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_PLAYING:
+      game->cursor_visible = false;
       if (game->breakout == NULL) {
         game->breakout = breakout_init();
         if (game->breakout == NULL) {
@@ -349,6 +351,7 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_PAUSED:
+      game->cursor_visible = true;
       if (game->pause_menu == NULL) {
         game->pause_menu = pause_menu_init();
         if (game->pause_menu == NULL) {
@@ -359,6 +362,7 @@ void game_change_state(game_t *game, game_state_t new_state) {
       break;
 
     case STATE_GAME_OVER:
+      game->cursor_visible = true;
       if (game->game_over_menu == NULL) {
         game->game_over_menu = game_over_menu_init();
         if (game->game_over_menu == NULL) {
