@@ -80,6 +80,11 @@ void game_process_input(game_t *game, uint8_t scancode) {
       }
       else if (key_code == 0x39) {
         game->key_space_pressed = !is_release;
+        if (!is_release && game->breakout != NULL && game->breakout->ball_attached) {
+          game->breakout->ball->xspeed = 0;
+          game->breakout->ball->yspeed = -3;
+          game->breakout->ball_attached = false;
+        }
       }
       break;
     case STATE_MENU: {
@@ -222,6 +227,13 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
           action = instructionmenu_process_mouse_click(game->instruction_menu, game->mouse_x, game->mouse_y);
         }
         break;
+      case STATE_PLAYING:
+        if (game->breakout != NULL && game->breakout->ball_attached) {
+          game->breakout->ball->xspeed = 0;
+          game->breakout->ball->yspeed = -3;
+          game->breakout->ball_attached = false;
+        }
+        break;
       default:
         break;
     }
@@ -303,13 +315,6 @@ void game_update(game_t *game) {
         }
         else if (game->mouse_control_active && game->breakout->bar != NULL) {
           move_bar_with_ball_mouse(game->breakout, game->mouse_target_x, game->breakout->bar->y, 100);
-        }
-        if (game->key_space_pressed) {
-          if (game->breakout->ball_attached) {
-            game->breakout->ball->xspeed = 0;
-            game->breakout->ball->yspeed = -3;
-            game->breakout->ball_attached = false;
-          }
         }
         if (game->breakout->lives == 0) {
           game_change_state(game, STATE_GAME_OVER);
