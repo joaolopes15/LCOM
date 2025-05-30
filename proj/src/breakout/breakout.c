@@ -59,6 +59,14 @@ breakout_t *breakout_init() {
   breakout->ball->yspeed = 0;
   breakout->ball_attached = true;
 
+  // Initialize balls array
+  breakout->balls[0] = breakout->ball; // Main ball is first in array
+  breakout->active_balls[0] = true;
+  for (int i = 1; i < 5; i++) {
+    breakout->balls[i] = NULL;
+    breakout->active_balls[i] = false;
+  }
+
   // Initialize powerups
   for (int i = 0; i < 10; i++) {
     breakout->powerups[i] = NULL;
@@ -276,8 +284,13 @@ int draw_breakout(breakout_t *breakout) {
   handle_powerup_collisions(breakout);
   draw_powerup(breakout);
 
-  if (draw_sprite(breakout->ball, breakout->ball->x, breakout->ball->y) != 0) {
-    return 1;
+  // Draw all active balls
+  for (int i = 0; i < 5; i++) {
+    if (breakout->active_balls[i] && breakout->balls[i] != NULL) {
+      if (draw_sprite(breakout->balls[i], breakout->balls[i]->x, breakout->balls[i]->y) != 0) {
+        return 1;
+      }
+    }
   }
 
   int count = 0;
@@ -312,15 +325,46 @@ void handle_powerup_collisions(breakout_t *breakout) {
           breakout->powerups[i]->x + breakout->powerups[i]->width >= breakout->bar->x &&
           breakout->powerups[i]->x <= breakout->bar->x + breakout->bar->width) {
         
-        // Powerup collected! Apply effect (for now, just add score)
+        // Powerup collected! Apply x2 ball effect
         breakout->score += 500; // Bonus points for collecting powerup
         
-        // TODO: Add specific powerup effects here (e.g., x2 multiplier, extra life, etc.)
+        // Spawn an extra ball (x2 effect)
+        spawn_extra_ball(breakout);
         
         // Remove the powerup
         destroy_sprite(breakout->powerups[i]);
         breakout->powerups[i] = NULL;
         breakout->active_powerups[i] = false;
+      }
+    }
+  }
+}
+
+void spawn_extra_ball(breakout_t *breakout) {
+  if (breakout == NULL) return;
+  
+  // Find an empty slot for the new ball
+  for (int i = 1; i < 5; i++) {
+    if (!breakout->active_balls[i]) {
+      breakout->balls[i] = create_sprite((xpm_map_t) ball_xpm);
+      if (breakout->balls[i] != NULL) {
+        // Position the new ball at the same location as the main ball
+        breakout->balls[i]->x = breakout->ball->x;
+        breakout->balls[i]->y = breakout->ball->y;
+        
+        // Give it a different speed direction (slightly angled)
+        if (breakout->ball->xspeed != 0 || breakout->ball->yspeed != 0) {
+          // If main ball is moving, give new ball a different angle
+          breakout->balls[i]->xspeed = -breakout->ball->xspeed + (rand() % 3 - 1);
+          breakout->balls[i]->yspeed = breakout->ball->yspeed + (rand() % 3 - 1);
+        } else {
+          // If main ball is stationary, give new ball initial movement
+          breakout->balls[i]->xspeed = 2 + (rand() % 3);
+          breakout->balls[i]->yspeed = -3;
+        }
+        
+        breakout->active_balls[i] = true;
+        break;
       }
     }
   }
@@ -348,84 +392,110 @@ void destroy_breakout(breakout_t *breakout) {
     }
   }
 
-  if (breakout->ball != NULL) {
-    destroy_sprite(breakout->ball);
+  // Clean up all balls
+  for (int i = 0; i < 5; i++) {
+    if (breakout->balls[i] != NULL) {
+      destroy_sprite(breakout->balls[i]);
+    }
   }
 
   free(breakout);
 }
 
-void handle_ball_collisions(breakout_t *breakout) {
-  if (breakout == NULL || breakout->ball == NULL || breakout->bar == NULL) {
+void handle_all_ball_collisions(breakout_t *breakout) {
+  if (breakout == NULL || breakout->bar == NULL) {
     return;
   }
 
-  if (breakout->ball->x <= 0 || breakout->ball->x + breakout->ball->width >= vmi_p.XResolution) {
-    breakout->ball->xspeed = -breakout->ball->xspeed;
-  }
-  if (breakout->ball->y <= 0) {
-    breakout->ball->yspeed = -breakout->ball->yspeed;
-  }
-  if (breakout->ball->y + breakout->ball->height >= vmi_p.YResolution) {
-    breakout->lives--;
-    breakout->ball->x = breakout->bar->x + (breakout->bar->width / 2) - (breakout->ball->width / 2);
-    breakout->ball->y = 485;
-    breakout->ball->xspeed = 0;
-    breakout->ball->yspeed = 0;
-    breakout->ball_attached = true;
-  }
-
-  if (breakout->ball->y + breakout->ball->height >= breakout->bar->y &&
-      breakout->ball->y <= breakout->bar->y + breakout->bar->height &&
-      breakout->ball->x + breakout->ball->width >= breakout->bar->x &&
-      breakout->ball->x <= breakout->bar->x + breakout->bar->width) {
-    
-    int ball_center_x = breakout->ball->x + breakout->ball->width / 2;
-    int bar_center_x = breakout->bar->x + breakout->bar->width / 2;
-    
-    float relative_hit = (float)(ball_center_x - bar_center_x) / (breakout->bar->width / 2);
-    
-    if (relative_hit < -1.0f) relative_hit = -1.0f;
-    if (relative_hit > 1.0f) relative_hit = 1.0f;
-    
-    float current_speed = sqrt(breakout->ball->xspeed * breakout->ball->xspeed + 
-                              breakout->ball->yspeed * breakout->ball->yspeed);
-    
-    float angle = relative_hit * (M_PI / 3.0f);
-    
-    breakout->ball->xspeed = (int)(current_speed * sin(angle));
-    breakout->ball->yspeed = -(int)(current_speed * cos(angle));
-    
-    if (breakout->ball->yspeed > -3) {
-      breakout->ball->yspeed = -3;
-    }
-  }
-
-  for (int i = 0; i < 60; i++) {
-    if (!breakout->active_bricks[i])
+  // Handle collisions for all active balls
+  for (int ball_idx = 0; ball_idx < 5; ball_idx++) {
+    if (!breakout->active_balls[ball_idx] || breakout->balls[ball_idx] == NULL) {
       continue;
+    }
 
-    if (breakout->ball->y <= breakout->bricks[i]->y + breakout->bricks[i]->height &&
-        breakout->ball->y + breakout->ball->height >= breakout->bricks[i]->y &&
-        breakout->ball->x + breakout->ball->width >= breakout->bricks[i]->x &&
-        breakout->ball->x <= breakout->bricks[i]->x + breakout->bricks[i]->width) {
-      if (breakout->ball->y + breakout->ball->height - breakout->ball->yspeed <= breakout->bricks[i]->y ||
-          breakout->ball->y - breakout->ball->yspeed >= breakout->bricks[i]->y + breakout->bricks[i]->height) {
-        breakout->ball->yspeed = -breakout->ball->yspeed;
+    Sprite *current_ball = breakout->balls[ball_idx];
+
+    // Wall collisions
+    if (current_ball->x <= 0 || current_ball->x + current_ball->width >= vmi_p.XResolution) {
+      current_ball->xspeed = -current_ball->xspeed;
+    }
+    if (current_ball->y <= 0) {
+      current_ball->yspeed = -current_ball->yspeed;
+    }
+    
+    // Ball fell off screen - only reset main ball, remove extra balls
+    if (current_ball->y + current_ball->height >= vmi_p.YResolution) {
+      if (ball_idx == 0) { // Main ball
+        breakout->lives--;
+        current_ball->x = breakout->bar->x + (breakout->bar->width / 2) - (current_ball->width / 2);
+        current_ball->y = 485;
+        current_ball->xspeed = 0;
+        current_ball->yspeed = 0;
+        breakout->ball_attached = true;
+      } else { // Extra ball - just remove it
+        destroy_sprite(current_ball);
+        breakout->balls[ball_idx] = NULL;
+        breakout->active_balls[ball_idx] = false;
+        continue;
       }
-      else {
-        breakout->ball->xspeed = -breakout->ball->xspeed;
-      }
-      breakout->score += 100;
-      breakout->active_bricks[i] = false;
+    }
+
+    // Bar collision
+    if (current_ball->y + current_ball->height >= breakout->bar->y &&
+        current_ball->y <= breakout->bar->y + breakout->bar->height &&
+        current_ball->x + current_ball->width >= breakout->bar->x &&
+        current_ball->x <= breakout->bar->x + breakout->bar->width) {
       
-      // 20% chance to spawn a powerup when a brick is destroyed
-      if ((rand() % 100) < 20) {
-        spawn_powerup(breakout, breakout->bricks[i]->x + breakout->bricks[i]->width / 2, 
-                     breakout->bricks[i]->y + breakout->bricks[i]->height);
-      }
+      int ball_center_x = current_ball->x + current_ball->width / 2;
+      int bar_center_x = breakout->bar->x + breakout->bar->width / 2;
       
-      break;
+      float relative_hit = (float)(ball_center_x - bar_center_x) / (breakout->bar->width / 2);
+      
+      if (relative_hit < -1.0f) relative_hit = -1.0f;
+      if (relative_hit > 1.0f) relative_hit = 1.0f;
+      
+      float current_speed = sqrt(current_ball->xspeed * current_ball->xspeed + 
+                                current_ball->yspeed * current_ball->yspeed);
+      
+      float angle = relative_hit * (M_PI / 3.0f);
+      
+      current_ball->xspeed = (int)(current_speed * sin(angle));
+      current_ball->yspeed = -(int)(current_speed * cos(angle));
+      
+      if (current_ball->yspeed > -3) {
+        current_ball->yspeed = -3;
+      }
+    }
+
+    // Brick collisions
+    for (int i = 0; i < 60; i++) {
+      if (!breakout->active_bricks[i])
+        continue;
+
+      if (current_ball->y <= breakout->bricks[i]->y + breakout->bricks[i]->height &&
+          current_ball->y + current_ball->height >= breakout->bricks[i]->y &&
+          current_ball->x + current_ball->width >= breakout->bricks[i]->x &&
+          current_ball->x <= breakout->bricks[i]->x + breakout->bricks[i]->width) {
+        
+        if (current_ball->y + current_ball->height - current_ball->yspeed <= breakout->bricks[i]->y ||
+            current_ball->y - current_ball->yspeed >= breakout->bricks[i]->y + breakout->bricks[i]->height) {
+          current_ball->yspeed = -current_ball->yspeed;
+        }
+        else {
+          current_ball->xspeed = -current_ball->xspeed;
+        }
+        
+        breakout->score += 100;
+        breakout->active_bricks[i] = false;
+        
+        // 20% chance to spawn a powerup when a brick is destroyed
+        if ((rand() % 100) < 20) {
+          spawn_powerup(breakout, breakout->bricks[i]->x + breakout->bricks[i]->width / 2, 
+                       breakout->bricks[i]->y + breakout->bricks[i]->height);
+        }
+        
+        break;
+      }
     }
   }
 }
