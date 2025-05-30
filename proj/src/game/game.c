@@ -1,6 +1,12 @@
 #include "game.h"
 #include "../sprite/sprite.h"
 #include "../assets/bar_xpm.h"
+#include "../assets/logo_xpm.h"
+#include "../menus/gameovermenu.h"
+#include "../menus/instructionmenu.h"
+#include "../menus/mainmenu.h"
+#include "../menus/menu_action_enum.h"
+#include "../menus/pausemenu.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -15,7 +21,8 @@ game_t *game_init() {
   }
 
   srand(time(NULL));
-
+  
+  game->main_menu = main_menu_init();
   game->current_state = STATE_MENU;
 
   game->key_left_pressed = false;
