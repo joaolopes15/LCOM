@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+// stores the least significant byte in the pointer parameter from a 16 bit value
 int(util_get_LSB)(uint16_t val, uint8_t *lsb) {
   if (lsb == NULL) {
     return 1;
@@ -12,6 +13,7 @@ int(util_get_LSB)(uint16_t val, uint8_t *lsb) {
   return 0;
 }
 
+// stores the most significant byte in the pointer parameter from a 16 bit value
 int(util_get_MSB)(uint16_t val, uint8_t *msb) {
   if (msb == NULL) {
     return 1;
@@ -22,6 +24,7 @@ int(util_get_MSB)(uint16_t val, uint8_t *msb) {
   return 0;
 }
 
+// wrapper for sys_inb. stores the value from a I/O port in a pointer
 int (util_sys_inb)(int port, uint8_t *value) {
   if (value == NULL) {
     return 1;

@@ -1,10 +1,12 @@
 #include "KBC.h"
 #include <stdint.h>
 
+// functions that reads the status register of the KBC
 int(read_KBC_status)(uint8_t *st){
     return util_sys_inb(0x64, st);
 }
 
+// reads output from the KBC. tries 10 times before returning 1, the functions reads from an I/O port and stores the read value in the output pointer. Then it stores if it is mouse data or keyboard data
 int read_KBC_output(uint8_t port, uint8_t *output, uint8_t mouse){
     uint8_t st;
     int tries = 10;
@@ -47,6 +49,7 @@ int read_KBC_output(uint8_t port, uint8_t *output, uint8_t mouse){
     return 1;
 }
 
+// writes a command to the KBC. it first checks if the input buffer is empty before writing
 int(write_KBC_command)(uint8_t port, uint8_t command){
     uint8_t st;
     int tries = 40;

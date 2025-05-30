@@ -6,6 +6,7 @@
 int timer_hook_id = 0;
 int counter = 0;
 
+// sets the frequency of a certain timer. it first reads the current configuration of the timer, then we configured the timer to operate in LSB followed by MSB mode and then constrcuts the command to send to the timer
 int(timer_set_frequency)(uint8_t timer, uint32_t freq) {
   
   if (freq < 19 || freq > TIMER_FREQ || timer > 2 || timer < 0) {
@@ -49,6 +50,7 @@ int(timer_set_frequency)(uint8_t timer, uint32_t freq) {
   return 0;
 }
 
+// function that subscribes and enables TIMER0 interrupts
 int(timer_subscribe_int)(uint8_t *bit_no) {
   if (bit_no == NULL)
     return 1;
@@ -62,6 +64,7 @@ int(timer_subscribe_int)(uint8_t *bit_no) {
   return 0;
 }
 
+// function to unsubscribe to timer interrupts
 int(timer_unsubscribe_int)() {
   if (sys_irqrmpolicy(&timer_hook_id) != 0)
     return 1;
@@ -69,10 +72,12 @@ int(timer_unsubscribe_int)() {
   return 0;
 }
 
+// timer interrupt handler that keeps track of a counter
 void(timer_int_handler)() {
   counter++;
 }
 
+// function to get current timer configuration using a read back command and stores it in the st pointer
 int(timer_get_conf)(uint8_t timer, uint8_t *st) {
   if (st == NULL || timer > 2 || timer < 0) {
     return 1;
@@ -91,6 +96,7 @@ int(timer_get_conf)(uint8_t timer, uint8_t *st) {
   return 0;
 }
 
+// displays the configuration of a timer using timer_print_config()
 int(timer_display_conf)(uint8_t timer, uint8_t st, enum timer_status_field field) {
   if (timer > 2 || timer < 0) {
     return 1;

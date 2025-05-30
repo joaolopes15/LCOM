@@ -6,6 +6,7 @@ int currentDrawBuffer = 0;
 int currentDisplayBuffer = 1;
 int readyBuffer = 2;
 
+// function that sets video mode using bios calls
 int(set_mode)(uint16_t mode) {
   reg86_t reg86;
 
@@ -23,6 +24,7 @@ int(set_mode)(uint16_t mode) {
   return 0;
 }
 
+// function that flips the buffers using bios calls, which displays the ready buffer and then rotates to the next buffers for the triple buffer implementation
 int(flip)() {
   reg86_t reg86;
 
@@ -45,6 +47,7 @@ int(flip)() {
   return 0;
 }
 
+// initializes minix in video mode with triple buffering. it first gets the mode info, then maps the physical memory to virtual memory for virtual ram access, sets up the triple buffers, sets the video mode and clears all the buffers.
 void *(vg_init) (uint16_t mode) {
   struct minix_mem_range mr;
   unsigned int vram_base;
@@ -85,6 +88,7 @@ void *(vg_init) (uint16_t mode) {
   return video_mem[currentDrawBuffer];
 }
 
+// function that draws a pixel on a certain position on the screen
 int(vg_draw_pixel)(uint16_t x, uint16_t y, uint32_t color) {
   if (x >= vmi_p.XResolution || y >= vmi_p.YResolution) {
     return 1;
@@ -115,6 +119,7 @@ int(vg_draw_pixel)(uint16_t x, uint16_t y, uint32_t color) {
   return 0;
 }
 
+// draws a line on the screen using the draw_pixel function
 int(vg_draw_hline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
   for (unsigned i = 0; i < len; i++) {
     if (vg_draw_pixel(x + i, y, color) != 0) {
@@ -125,6 +130,7 @@ int(vg_draw_hline)(uint16_t x, uint16_t y, uint16_t len, uint32_t color) {
   return 0;
 }
 
+// draws a rectangle on the screen using the draw_hline function
 int(vg_draw_rectangle)(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color) {
   for (unsigned i = 0; i < height; i++) {
     if (vg_draw_hline(x, y + i, width, color) != 0) {
@@ -135,6 +141,7 @@ int(vg_draw_rectangle)(uint16_t x, uint16_t y, uint16_t width, uint16_t height, 
   return 0;
 }
 
+// draws a XPM image on the screen into memory, by processing each pixel. transparent pixels are skipped
 int(draw_xpm)(xpm_map_t xpm, uint16_t x, uint16_t y) {
   xpm_image_t img;
   uint8_t *map = xpm_load(xpm, XPM_8_8_8_8, &img);
@@ -169,6 +176,7 @@ int(draw_xpm)(xpm_map_t xpm, uint16_t x, uint16_t y) {
   return 0;
 }
 
+// clears the screen by filling up the video memory with zeros
 int(clear_screen)() {
   if (memset(video_mem[currentDrawBuffer], 0, vmi_p.XResolution * vmi_p.YResolution * ((vmi_p.BitsPerPixel + 7) / 8)) == NULL) {
     return 1;
