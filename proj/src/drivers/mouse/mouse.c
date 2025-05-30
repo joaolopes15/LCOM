@@ -10,22 +10,26 @@ int byte_idx = 0;
 uint8_t m_bytes[3];
 uint8_t curr_byte;
 
+// function that subscribes to mouse interrupts
 int mouse_subscribe_int(uint8_t *bit_no){
   if(bit_no == NULL) return 1;
     *bit_no = BIT(m_hook);
     return sys_irqsetpolicy(12 , IRQ_REENABLE | IRQ_EXCLUSIVE, &m_hook);
 }
 
+// function that unsubscribes to mouse interrupts
 int mouse_unsubscribe_int(){
   return sys_irqrmpolicy(&m_hook);
 }
 
+// mouse interrupt handler. reads the output from the KBC and stores it in the global variable curr_byte
 void (mouse_ih)() {
   if(read_KBC_output(0x60, &curr_byte, 1) != 0) {
         return;
     }
 }
 
+// assembles a mouse packet using the received bytes from the byte_idx variable and stores them in the m_bytes array
 void packet_assembly() {
   if (byte_idx == 0 && (curr_byte & FIRST_BYTE)) { 
     m_bytes[byte_idx] = curr_byte;
@@ -40,6 +44,7 @@ void packet_assembly() {
   }
 }
 
+// function that assembles the mouse packet into the m_packet variable. it stores the bytes storage, mouse buttons states, overflow indicators and delta movements. after this, it resets the byte index for the next packet
 void m_assemble_packet() {
   
   m_packet.bytes[0] = m_bytes[0];
@@ -66,6 +71,7 @@ void m_assemble_packet() {
   byte_idx = 0;
 }
 
+// function that sends a command to the mouse. first it disables interrupts, writes the command to the KBC and then the actual command to the mouse, reads its response and re-enables interrupts
 int (m_write)(uint8_t command) {
 
   uint8_t response;
