@@ -96,3 +96,20 @@ int draw_animated_sprite(AnimSprite *as, uint16_t x, uint16_t y) {
   
   return result;
 }
+
+void animate_sprite_once(AnimSprite *as) {
+  if (as == NULL) {
+    return;
+  }
+
+  as->cur_aspeed--;
+  
+  if (as->cur_aspeed <= 0) {
+    as->cur_fig++;
+    if (as->cur_fig >= as->num_fig) {
+      as->cur_fig = as->num_fig - 1;
+    } else {
+      as->cur_aspeed = as->aspeed;
+    }
+  }
+}

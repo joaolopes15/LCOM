@@ -20,4 +20,6 @@ void destroy_animated_sprite(AnimSprite *as);
 
 int draw_animated_sprite(AnimSprite *as, uint16_t x, uint16_t y);
 
+void animate_sprite_once(AnimSprite *as);
+
 #endif
