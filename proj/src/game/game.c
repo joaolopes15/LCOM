@@ -175,16 +175,23 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
   if (game->mouse_y > vmi_p.YResolution)
     game->mouse_y = vmi_p.YResolution;
 
+  // Update hover effects for menu buttons
   switch (game->current_state) {
     case STATE_MENU:
       if (game->main_menu != NULL) {
         mainmenu_update_hover(game->main_menu, game->mouse_x, game->mouse_y);
       }
       break;
+    case STATE_PAUSED:
+      if (game->pause_menu != NULL) {
+        pausemenu_update_hover(game->pause_menu, game->mouse_x, game->mouse_y);
+      }
+      break;
     default:
       break;
   }
 
+  // Handle left mouse button clicks
   if (mouse_packet->lb) {
     menu_action_t action = MENU_ACTION_NONE;
     
@@ -194,16 +201,32 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
           action = mainmenu_process_mouse_click(game->main_menu, game->mouse_x, game->mouse_y);
         }
         break;
+      case STATE_PAUSED:
+        if (game->pause_menu != NULL) {
+          action = pausemenu_process_mouse_click(game->pause_menu, game->mouse_x, game->mouse_y);
+        }
+        break;
       default:
         break;
     }
     
+    // Process the menu action
     switch (action) {
       case MENU_ACTION_START_GAME:
         game_change_state(game, STATE_PLAYING);
         break;
       case MENU_ACTION_HOW_TO_PLAY:
         game_change_state(game, STATE_HOW_TO_PLAY);
+        break;
+      case MENU_ACTION_RETRY:
+        if (game->breakout != NULL) {
+          destroy_breakout(game->breakout);
+          game->breakout = NULL;
+        }
+        game_change_state(game, STATE_PLAYING);
+        break;
+      case MENU_ACTION_MAIN_MENU:
+        game_change_state(game, STATE_MENU);
         break;
       case MENU_ACTION_EXIT:
         game_change_state(game, STATE_EXIT);
