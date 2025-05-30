@@ -18,8 +18,6 @@ void gameovermenu_process_input(game_t *game, uint8_t scancode) {
     if (!is_release) {
         if (scancode == 0x1C) { // enter key
             if (game->game_over_selected_option == 0) {
-                game->barra->x = 350;
-                game->barra->y = 500;
                 game_change_state(game, STATE_PLAYING);
             } else if (game->game_over_selected_option == 1) {
                 game_change_state(game, STATE_MENU);

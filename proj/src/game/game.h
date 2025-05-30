@@ -7,6 +7,7 @@
 #include "../drivers/mouse/mouse.h"
 #include "../sprite/sprite.h"
 #include "../breakout/breakout.h"
+#include "../menus/mainmenu.h"
 
 // enum of all possible game states
 typedef enum {
@@ -22,14 +23,12 @@ typedef enum {
 typedef struct {
   game_state_t current_state;   // current state of the game
   game_state_t previous_state;  // previous state of the game
-  Sprite* barra;
 
-
-  // Add menu selection tracking
-  int main_menu_selected_option; // 0: Start, 1: How to Play, 2: Exit
   int pause_menu_selected_option; // 0: Continue, 1: Retry, 2: Exit to Menu
   int game_over_selected_option; // 0: Retry, 1: Exit to Menu 2: Exit
+
   breakout_t* breakout;
+  main_menu_t* main_menu;
   
   bool key_left_pressed;
   bool key_right_pressed;

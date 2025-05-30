@@ -1,11 +1,11 @@
 #include "game.h"
 #include "../assets/bar_xpm.h"
-#include "../assets/test_xpm.h"
 #include "../assets/logo_xpm.h"
-#include "../menus/mainmenu.h"
-#include "../menus/pausemenu.h"
+#include "../assets/test_xpm.h"
 #include "../menus/gameovermenu.h"
 #include "../menus/instructionmenu.h"
+#include "../menus/mainmenu.h"
+#include "../menus/pausemenu.h"
 #include <stdlib.h>
 
 // TODO: put all scancodes in a separate header file
@@ -18,6 +18,7 @@ game_t *game_init() {
     return NULL;
   }
 
+  game->main_menu = main_menu_init();
   game->current_state = STATE_MENU;
 
   game->key_left_pressed = false;
@@ -26,15 +27,12 @@ game_t *game_init() {
   game->key_down_pressed = false;
   game->key_space_pressed = false;
 
-  // Initialize menu selection
-  game->main_menu_selected_option = 0;
   game->pause_menu_selected_option = 0;
   game->game_over_selected_option = 0;
 
-  
-  game->mouse_x = 400; 
+  game->mouse_x = 400;
   game->mouse_y = 300;
-  game->mouse_target_x = 350; 
+  game->mouse_target_x = 350;
   game->mouse_control_active = false;
 
   game->breakout = NULL;
@@ -72,19 +70,33 @@ void game_process_input(game_t *game, uint8_t scancode) {
         game->key_space_pressed = !is_release;
       }
       break;
-
-        case STATE_MENU:
-            mainmenu_process_input(game, scancode);
-            break;
-        case STATE_PAUSED:
-            pausemenu_process_input(game, scancode);
-            break;
-        case STATE_GAME_OVER:
-            gameovermenu_process_input(game, scancode);
-            break;
-        case STATE_HOW_TO_PLAY:
-            instructionmenu_process_input(game, scancode);
-            break;
+    case STATE_MENU: {
+      menu_action_t action = mainmenu_process_input(game->main_menu, scancode);
+      switch (action) {
+        case MENU_ACTION_START_GAME:
+          game_change_state(game, STATE_PLAYING);
+          break;
+        case MENU_ACTION_HOW_TO_PLAY:
+          game_change_state(game, STATE_HOW_TO_PLAY);
+          break;
+        case MENU_ACTION_EXIT:
+          game_change_state(game, STATE_EXIT);
+          break;
+        case MENU_ACTION_NONE:
+        default:
+          break;
+      }
+      break;
+    }
+    case STATE_PAUSED:
+      pausemenu_process_input(game, scancode);
+      break;
+    case STATE_GAME_OVER:
+      gameovermenu_process_input(game, scancode);
+      break;
+    case STATE_HOW_TO_PLAY:
+      instructionmenu_process_input(game, scancode);
+      break;
 
     case STATE_EXIT:
       break;
@@ -99,25 +111,29 @@ void game_process_mouse_input(game_t *game, struct packet *mouse_packet) {
   game->mouse_x += mouse_packet->delta_x;
   game->mouse_y += mouse_packet->delta_y;
 
-  if (game->mouse_x < 0) game->mouse_x = 0;
-  if (game->mouse_x > vmi_p.XResolution) game->mouse_x = vmi_p.XResolution;
-  if (game->mouse_y < 0) game->mouse_y = 0;
-  if (game->mouse_y > vmi_p.YResolution) game->mouse_y = vmi_p.YResolution;
+  if (game->mouse_x < 0)
+    game->mouse_x = 0;
+  if (game->mouse_x > vmi_p.XResolution)
+    game->mouse_x = vmi_p.XResolution;
+  if (game->mouse_y < 0)
+    game->mouse_y = 0;
+  if (game->mouse_y > vmi_p.YResolution)
+    game->mouse_y = vmi_p.YResolution;
 
   switch (game->current_state) {
     case STATE_PLAYING:
       if (game->breakout != NULL && game->breakout->bar != NULL) {
         game->mouse_target_x = game->mouse_x - game->breakout->bar->width / 2;
-        
-        if (game->mouse_target_x < 0) 
+
+        if (game->mouse_target_x < 0)
           game->mouse_target_x = 0;
-        if (game->mouse_target_x + game->breakout->bar->width > vmi_p.XResolution) 
+        if (game->mouse_target_x + game->breakout->bar->width > vmi_p.XResolution)
           game->mouse_target_x = vmi_p.XResolution - game->breakout->bar->width;
-        
+
         game->mouse_control_active = true;
       }
       break;
-    
+
     case STATE_MENU:
     case STATE_PAUSED:
     case STATE_GAME_OVER:
@@ -186,18 +202,19 @@ void game_render(game_t *game) {
     return;
 
   switch (game->current_state) {
-            case STATE_MENU:
-            mainmenu_render(game);
-            break;
-        case STATE_PAUSED:
-            pausemenu_render(game);
-            break;
-        case STATE_GAME_OVER:
-            gameovermenu_render(game);
-            break;
-        case STATE_HOW_TO_PLAY:
-            instructionmenu_render(game);
-            break;
+    case STATE_MENU:
+      clear_screen();
+      draw_main_menu(game->main_menu);
+      break;
+    case STATE_PAUSED:
+      pausemenu_render(game);
+      break;
+    case STATE_GAME_OVER:
+      gameovermenu_render(game);
+      break;
+    case STATE_HOW_TO_PLAY:
+      instructionmenu_render(game);
+      break;
 
     case STATE_PLAYING:
       clear_screen();
@@ -231,6 +248,10 @@ void game_change_state(game_t *game, game_state_t new_state) {
           game_change_state(game, STATE_EXIT);
         }
       }
+      if (game->main_menu != NULL) {
+        destroy_main_menu(game->main_menu);
+        game->main_menu = NULL;
+      }
       break;
 
     case STATE_PAUSED:
@@ -254,4 +275,3 @@ void game_exit(game_t *game) {
 
   free(game);
 }
-

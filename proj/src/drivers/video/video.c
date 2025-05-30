@@ -31,7 +31,6 @@ int(flip)() {
   reg86.intno = 0x10;
   reg86.ah = 0x4F;
   reg86.al = 0x07;
-  reg86.cx = 0;
   reg86.dx = readyBuffer * vmi_p.YResolution;
 
   if (sys_int86(&reg86) != 0) {

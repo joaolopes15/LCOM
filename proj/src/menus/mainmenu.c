@@ -12,66 +12,195 @@
 #include "../assets/menus/welcomeBIGGER_xpm.h"
 #include "../drivers/video/video.h"
 
-void mainmenu_process_input(game_t *game, uint8_t scancode) {
+main_menu_t *main_menu_init() {
+    main_menu_t* main_menu = (main_menu_t *) malloc(sizeof(main_menu_t));
+
+    if (main_menu == NULL) {
+        printf("Error alocating memory for main menu structure\n");
+        return NULL;
+    }
+
+    main_menu->welcome_sprite = NULL;
+    main_menu->logo_sprite = NULL;
+    main_menu->startS_sprite = NULL;
+    main_menu->start_sprite = NULL;
+    main_menu->howtoplayS_sprite = NULL;
+    main_menu->howtoplay_sprite = NULL;
+    main_menu->exitS_sprite = NULL;
+    main_menu->exit_sprite = NULL;
+
+    main_menu->welcome_sprite = create_sprite((xpm_map_t) welcomeBIGGER_xpm);
+    if (main_menu->welcome_sprite == NULL) {
+        destroy_main_menu(main_menu);
+        return NULL;
+    }
+
+    main_menu->logo_sprite = create_sprite((xpm_map_t) logo_xpm);
+    if (main_menu->logo_sprite == NULL) {
+        destroy_main_menu(main_menu);
+        return NULL;
+    }
+
+    main_menu->startS_sprite = create_sprite((xpm_map_t) startS_xpm);
+    if (main_menu->startS_sprite == NULL) {
+        destroy_main_menu(main_menu);
+        return NULL;
+    }
+
+    main_menu->start_sprite = create_sprite((xpm_map_t) startgame_xpm);
+    if (main_menu->start_sprite == NULL) {
+        destroy_main_menu(main_menu);
+        return NULL;
+    }
+
+    main_menu->howtoplayS_sprite = create_sprite((xpm_map_t) howtoplayS_xpm);
+    if (main_menu->howtoplayS_sprite == NULL) {
+        destroy_main_menu(main_menu);
+        return NULL;
+    }
+
+    main_menu->howtoplay_sprite = create_sprite((xpm_map_t) howtoplay_xpm);
+    if (main_menu->howtoplay_sprite == NULL) {
+        destroy_main_menu(main_menu);
+        return NULL;
+    }
+
+    main_menu->exitS_sprite = create_sprite((xpm_map_t) exitS_xpm);
+    if (main_menu->exitS_sprite == NULL) {
+        destroy_main_menu(main_menu);
+        return NULL;
+    }
+
+    main_menu->exit_sprite = create_sprite((xpm_map_t) exit_xpm);
+    if (main_menu->exit_sprite == NULL) {
+        destroy_main_menu(main_menu);
+        return NULL;
+    }
+    
+    main_menu->selected_option = 0;
+    
+    return main_menu;
+}
+
+menu_action_t mainmenu_process_input(main_menu_t *main_menu, uint8_t scancode) {
+    if (main_menu == NULL) {
+        return MENU_ACTION_NONE;
+    }
+    
     bool is_release = (scancode & 0x80) != 0;
     uint8_t key_code = scancode & 0x7F;
     
     if (!is_release) {
         if (scancode == 0x1C) { // enter key
-            if (game->main_menu_selected_option == 0) {
-                game_change_state(game, STATE_PLAYING);
-            } else if (game->main_menu_selected_option == 1) {
-                game_change_state(game, STATE_HOW_TO_PLAY);
-            } else if (game->main_menu_selected_option == 2) {
-                game_change_state(game, STATE_EXIT);
+            if (main_menu->selected_option == 0) {
+                return MENU_ACTION_START_GAME;
+            } else if (main_menu->selected_option == 1) {
+                return MENU_ACTION_HOW_TO_PLAY;
+            } else if (main_menu->selected_option == 2) {
+                return MENU_ACTION_EXIT;
             }
         } else if (scancode == 0x01) { // esc key to exit
-            game_change_state(game, STATE_EXIT);
+            return MENU_ACTION_EXIT;
         } else if (key_code == 0x48) { // up arrow
-            if (game->main_menu_selected_option > 0) game->main_menu_selected_option--;
+            if (main_menu->selected_option > 0) {
+                main_menu->selected_option--;
+            }
         } else if (key_code == 0x50) { // down arrow
-            if (game->main_menu_selected_option < 2) game->main_menu_selected_option++;
+            if (main_menu->selected_option < 2) {
+                main_menu->selected_option++;
+            }
+        }
+    }
+    return MENU_ACTION_NONE;
+}
+
+void draw_main_menu(main_menu_t *main_menu) {
+    if (main_menu == NULL) {
+        return;
+    }
+
+    if (main_menu->welcome_sprite != NULL) {
+        draw_sprite(main_menu->welcome_sprite, 200, 0);
+    }
+    if (main_menu->logo_sprite != NULL) {
+        draw_sprite(main_menu->logo_sprite, 270, 100);
+    }
+    
+    if (main_menu->selected_option == 0) {
+        if (main_menu->startS_sprite != NULL) {
+            draw_sprite(main_menu->startS_sprite, 250, 300);
+        }
+    } else {
+        if (main_menu->start_sprite != NULL) {
+            draw_sprite(main_menu->start_sprite, 250, 300);
+        }
+    }
+    
+    if (main_menu->selected_option == 1) {
+        if (main_menu->howtoplayS_sprite != NULL) {
+            draw_sprite(main_menu->howtoplayS_sprite, 250, 400);
+        }
+    } else {
+        if (main_menu->howtoplay_sprite != NULL) {
+            draw_sprite(main_menu->howtoplay_sprite, 250, 400);
+        }
+    }
+    
+    if (main_menu->selected_option == 2) {
+        if (main_menu->exitS_sprite != NULL) {
+            draw_sprite(main_menu->exitS_sprite, 250, 500);
+        }
+    } else {
+        if (main_menu->exit_sprite != NULL) {
+            draw_sprite(main_menu->exit_sprite, 250, 500);
         }
     }
 }
 
-void mainmenu_render(game_t *game) {
-    clear_screen();
-    draw_background();
-    //Sprite *background_sprite = create_sprite((xpm_map_t) background4_xpm);
-    Sprite *welcome_sprite = create_sprite((xpm_map_t) welcomeBIGGER_xpm);
-    Sprite *to_sprite = create_sprite((xpm_map_t) to_xpm);
-    Sprite *logo_sprite = create_sprite((xpm_map_t) logo_xpm);
-    Sprite *startS_sprite = create_sprite((xpm_map_t) startS_xpm);
-    Sprite *startgame_sprite = create_sprite((xpm_map_t) startgame_xpm);
-    Sprite *howtoplayS_sprite = create_sprite((xpm_map_t) howtoplayS_xpm);
-    Sprite *howtoplay_sprite = create_sprite((xpm_map_t) howtoplay_xpm);
-    Sprite *exitS_sprite = create_sprite((xpm_map_t) exitS_xpm);
-    Sprite *exit_sprite = create_sprite((xpm_map_t) exit_xpm);
-    //draw_sprite(background_sprite, 0, 0);
-    draw_sprite(welcome_sprite, 200, 0);
-    draw_sprite(to_sprite, 470, 20);
-    draw_sprite(logo_sprite, 270, 100);
-    if (game->main_menu_selected_option == 0)
-        draw_sprite(startS_sprite, 250, 300);
-    else
-        draw_sprite(startgame_sprite, 250, 300);
-    if (game->main_menu_selected_option == 1)
-        draw_sprite(howtoplayS_sprite, 250, 400);
-    else
-        draw_sprite(howtoplay_sprite, 250, 400);
-    if (game->main_menu_selected_option == 2)
-        draw_sprite(exitS_sprite, 230, 500);
-    else
-        draw_sprite(exit_sprite, 250, 500);
-    //destroy_sprite(background_sprite);
-    destroy_sprite(welcome_sprite);
-    destroy_sprite(to_sprite);
-    destroy_sprite(logo_sprite);
-    destroy_sprite(startS_sprite);
-    destroy_sprite(startgame_sprite);
-    destroy_sprite(howtoplayS_sprite);
-    destroy_sprite(howtoplay_sprite);
-    destroy_sprite(exitS_sprite);
-    destroy_sprite(exit_sprite);
+void destroy_main_menu(main_menu_t *main_menu) {
+    if (main_menu == NULL) {
+        return;
+    }
+
+    if (main_menu->welcome_sprite != NULL) {
+        destroy_sprite(main_menu->welcome_sprite);
+        main_menu->welcome_sprite = NULL;
+    }
+
+    if (main_menu->logo_sprite != NULL) {
+        destroy_sprite(main_menu->logo_sprite);
+        main_menu->logo_sprite = NULL;
+    }
+
+    if (main_menu->startS_sprite != NULL) {
+        destroy_sprite(main_menu->startS_sprite);
+        main_menu->startS_sprite = NULL;
+    }
+
+    if (main_menu->start_sprite != NULL) {
+        destroy_sprite(main_menu->start_sprite);
+        main_menu->start_sprite = NULL;
+    }
+
+    if (main_menu->howtoplayS_sprite != NULL) {
+        destroy_sprite(main_menu->howtoplayS_sprite);
+        main_menu->howtoplayS_sprite = NULL;
+    }
+
+    if (main_menu->howtoplay_sprite != NULL) {
+        destroy_sprite(main_menu->howtoplay_sprite);
+        main_menu->howtoplay_sprite = NULL;
+    }
+
+    if (main_menu->exitS_sprite != NULL) {
+        destroy_sprite(main_menu->exitS_sprite);
+        main_menu->exitS_sprite = NULL;
+    }
+
+    if (main_menu->exit_sprite != NULL) {
+        destroy_sprite(main_menu->exit_sprite);
+        main_menu->exit_sprite = NULL;
+    }
+    
+    free(main_menu);
 }

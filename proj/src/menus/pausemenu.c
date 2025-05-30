@@ -18,8 +18,6 @@ void pausemenu_process_input(game_t *game, uint8_t scancode) {
             if (game->pause_menu_selected_option == 0) {
                 game_change_state(game, STATE_PLAYING);
             } else if (game->pause_menu_selected_option == 1) {
-                game->barra->x = 350;
-                game->barra->y = 500;
                 game_change_state(game, STATE_PLAYING);
             } else if (game->pause_menu_selected_option == 2) {
                 game_change_state(game, STATE_MENU);
