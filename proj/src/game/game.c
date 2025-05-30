@@ -66,10 +66,10 @@ void game_process_input(game_t *game, uint8_t scancode) {
       if (scancode == 0x01) { // esc key to pause
         game_change_state(game, STATE_PAUSED);
       }
-      if (key_code == 0x4B) { // left arrow
+      if (key_code == 0x4B || key_code == 0x1E) { // left arrow or A key
         game->key_left_pressed = !is_release;
       }
-      else if (key_code == 0x4D) { // right arrow
+      else if (key_code == 0x4D || key_code == 0x20) { // right arrow or D key
         game->key_right_pressed = !is_release;
       }
       else if (key_code == 0x48) { // up arrow
