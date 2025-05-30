@@ -12,7 +12,9 @@ typedef struct {
 instruction_menu_t* instruction_menu_init();
 
 menu_action_t instructionmenu_process_input(instruction_menu_t *instruction_menu, uint8_t scancode);
+
 void draw_instruction_menu(instruction_menu_t *instruction_menu);
+
 void destroy_instruction_menu(instruction_menu_t *intruction_menu);
 
 #endif

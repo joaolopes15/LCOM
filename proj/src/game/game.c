@@ -5,8 +5,8 @@
 #include "../menus/gameovermenu.h"
 #include "../menus/instructionmenu.h"
 #include "../menus/mainmenu.h"
-#include "../menus/pausemenu.h"
 #include "../menus/menu_action_enum.h"
+#include "../menus/pausemenu.h"
 #include <stdlib.h>
 
 // TODO: put all scancodes in a separate header file
@@ -89,9 +89,20 @@ void game_process_input(game_t *game, uint8_t scancode) {
       }
       break;
     }
-    case STATE_PAUSED:
-      pausemenu_process_input(game, scancode);
+    case STATE_PAUSED: {
+      menu_action_t action = pausemenu_process_input(game->pause_menu, scancode);
+      switch (action) {
+        case MENU_ACTION_START_GAME:
+          game_change_state(game, STATE_PLAYING);
+          break;
+        case MENU_ACTION_MAIN_MENU:
+          game_change_state(game, STATE_MENU);
+        case MENU_ACTION_NONE:
+        default:
+          break;
+      }
       break;
+    }
     case STATE_GAME_OVER:
       gameovermenu_process_input(game, scancode);
       break;
@@ -216,7 +227,8 @@ void game_render(game_t *game) {
       draw_main_menu(game->main_menu);
       break;
     case STATE_PAUSED:
-      pausemenu_render(game);
+      clear_screen();
+      draw_pause_menu(game->pause_menu);
       break;
     case STATE_GAME_OVER:
       gameovermenu_render(game);
@@ -247,6 +259,14 @@ void game_change_state(game_t *game, game_state_t new_state) {
         destroy_breakout(game->breakout);
         game->breakout = NULL;
       }
+      if (game->instruction_menu != NULL) {
+        destroy_instruction_menu(game->instruction_menu);
+        game->instruction_menu = NULL;
+      }
+      if (game->pause_menu != NULL) {
+        destroy_pause_menu(game->pause_menu);
+        game->pause_menu = NULL;
+      }
       break;
 
     case STATE_PLAYING:
@@ -261,9 +281,19 @@ void game_change_state(game_t *game, game_state_t new_state) {
         destroy_main_menu(game->main_menu);
         game->main_menu = NULL;
       }
+      if (game->pause_menu != NULL) {
+        destroy_pause_menu(game->pause_menu);
+      }
       break;
 
     case STATE_PAUSED:
+      if (game->pause_menu == NULL) {
+        game->pause_menu = pause_menu_init();
+        if (game->pause_menu == NULL) {
+          printf("Error initializing pause menu\n");
+          game_change_state(game, STATE_EXIT);
+        }
+      }
       break;
 
     case STATE_GAME_OVER:
