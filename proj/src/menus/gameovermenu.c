@@ -86,7 +86,7 @@ menu_action_t gameovermenu_process_input(game_over_menu_t *game_over_menu, uint8
   if (!is_release) {
     if (scancode == 0x1C) { // enter key
       if (game_over_menu->selected_option == 0) {
-        return MENU_ACTION_START_GAME;
+        return MENU_ACTION_RETRY;
       }
       else if (game_over_menu->selected_option == 1) {
         return MENU_ACTION_MAIN_MENU;

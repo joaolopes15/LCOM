@@ -95,6 +95,13 @@ void game_process_input(game_t *game, uint8_t scancode) {
         case MENU_ACTION_START_GAME:
           game_change_state(game, STATE_PLAYING);
           break;
+        case MENU_ACTION_RETRY:
+          if (game->breakout != NULL) {
+            destroy_breakout(game->breakout);
+            game->breakout = NULL;
+          }
+          game_change_state(game, STATE_PLAYING);
+          break;
         case MENU_ACTION_MAIN_MENU:
           game_change_state(game, STATE_MENU);
           break;
@@ -107,7 +114,11 @@ void game_process_input(game_t *game, uint8_t scancode) {
     case STATE_GAME_OVER: {
       menu_action_t action = gameovermenu_process_input(game->game_over_menu, scancode);
       switch (action) {
-        case MENU_ACTION_START_GAME:
+        case MENU_ACTION_RETRY:
+          if (game->breakout != NULL) {
+            destroy_breakout(game->breakout);
+            game->breakout = NULL;
+          }
           game_change_state(game, STATE_PLAYING);
           break;
         case MENU_ACTION_MAIN_MENU:
@@ -284,6 +295,10 @@ void game_change_state(game_t *game, game_state_t new_state) {
         destroy_pause_menu(game->pause_menu);
         game->pause_menu = NULL;
       }
+      if (game->game_over_menu != NULL) {
+        destroy_game_over(game->game_over_menu);
+        game->game_over_menu = NULL;
+      }
       if (game->main_menu == NULL) {
         game->main_menu = main_menu_init();
         if (game->main_menu == NULL) {
@@ -307,6 +322,11 @@ void game_change_state(game_t *game, game_state_t new_state) {
       }
       if (game->pause_menu != NULL) {
         destroy_pause_menu(game->pause_menu);
+        game->pause_menu = NULL;
+      }
+      if (game->game_over_menu != NULL) {
+        destroy_game_over(game->game_over_menu);
+        game->game_over_menu = NULL;
       }
       break;
 

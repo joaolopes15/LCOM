@@ -81,7 +81,7 @@ menu_action_t pausemenu_process_input(pause_menu_t *pause_menu, uint8_t scancode
         return MENU_ACTION_START_GAME;
       }
       else if (pause_menu->selected_option == 1) {
-        return MENU_ACTION_START_GAME;
+        return MENU_ACTION_RETRY;
       }
       else if (pause_menu->selected_option == 2) {
         return MENU_ACTION_MAIN_MENU;
