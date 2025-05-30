@@ -6,6 +6,7 @@
 #include "../assets/orange_brick_xpm.h"
 #include "../assets/red_brick_xpm.h"
 #include "../assets/yellow_brick_xpm.h"
+#include "../assets/x2powerup_xpm.h"
 #include "../assets/numbers/number_zero_xpm.h"
 #include "../assets/numbers/number_one_xpm.h"
 #include "../assets/numbers/number_two_xpm.h"
@@ -19,6 +20,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 breakout_t *breakout_init() {
   breakout_t *breakout = (breakout_t *) malloc(sizeof(breakout_t));
@@ -56,6 +58,12 @@ breakout_t *breakout_init() {
   breakout->ball->xspeed = 0;
   breakout->ball->yspeed = 0;
   breakout->ball_attached = true;
+
+  // Initialize powerups
+  for (int i = 0; i < 10; i++) {
+    breakout->powerups[i] = NULL;
+    breakout->active_powerups[i] = false;
+  }
 
   return breakout;
 }
@@ -187,6 +195,67 @@ int draw_score(breakout_t *breakout) {
   return 0;
 }
 
+int draw_powerup(breakout_t *breakout){
+  for (int i = 0; i < 10; i++) {
+    if (breakout->active_powerups[i] && breakout->powerups[i] != NULL) {
+      if (draw_sprite(breakout->powerups[i], breakout->powerups[i]->x, breakout->powerups[i]->y) != 0) {
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+
+void spawn_powerup(breakout_t *breakout, int x, int y) {
+  if (breakout == NULL) return;
+  
+  // Find an empty slot for the powerup
+  for (int i = 0; i < 10; i++) {
+    if (!breakout->active_powerups[i]) {
+      breakout->powerups[i] = create_sprite((xpm_map_t) x2powerup_xpm);
+      if (breakout->powerups[i] != NULL) {
+        // Set position - randomize x position if not specified
+        if (x < 0) {
+          // Random x position between 50 and 750 (to keep within screen bounds)
+          breakout->powerups[i]->x = 50 + (rand() % 701);
+        } else {
+          breakout->powerups[i]->x = x;
+        }
+        
+        if (y < 0) {
+          // Random y position between bricks (220) and bar (500)
+          breakout->powerups[i]->y = 250 + (rand() % 200);
+        } else {
+          breakout->powerups[i]->y = y;
+        }
+        
+        // Set downward movement speed
+        breakout->powerups[i]->yspeed = 2;
+        breakout->active_powerups[i] = true;
+        break;
+      }
+    }
+  }
+}
+
+void update_powerups(breakout_t *breakout) {
+  if (breakout == NULL) return;
+  
+  for (int i = 0; i < 10; i++) {
+    if (breakout->active_powerups[i] && breakout->powerups[i] != NULL) {
+      // Move powerup down
+      breakout->powerups[i]->y += breakout->powerups[i]->yspeed;
+      
+      // Remove powerup if it goes off screen (below bar area)
+      if (breakout->powerups[i]->y > 550) {
+        destroy_sprite(breakout->powerups[i]);
+        breakout->powerups[i] = NULL;
+        breakout->active_powerups[i] = false;
+      }
+    }
+  }
+}
+
 int draw_breakout(breakout_t *breakout) {
   if (breakout == NULL || breakout->bar == NULL || breakout->ball == NULL) {
     return 1;
@@ -201,6 +270,11 @@ int draw_breakout(breakout_t *breakout) {
   draw_lives(breakout);
 
   draw_score(breakout);
+
+  // Update and draw powerups
+  update_powerups(breakout);
+  handle_powerup_collisions(breakout);
+  draw_powerup(breakout);
 
   if (draw_sprite(breakout->ball, breakout->ball->x, breakout->ball->y) != 0) {
     return 1;
@@ -227,6 +301,31 @@ int draw_breakout(breakout_t *breakout) {
   return 0;
 }
 
+void handle_powerup_collisions(breakout_t *breakout) {
+  if (breakout == NULL || breakout->bar == NULL) return;
+  
+  for (int i = 0; i < 10; i++) {
+    if (breakout->active_powerups[i] && breakout->powerups[i] != NULL) {
+      // Check collision between powerup and bar
+      if (breakout->powerups[i]->y + breakout->powerups[i]->height >= breakout->bar->y &&
+          breakout->powerups[i]->y <= breakout->bar->y + breakout->bar->height &&
+          breakout->powerups[i]->x + breakout->powerups[i]->width >= breakout->bar->x &&
+          breakout->powerups[i]->x <= breakout->bar->x + breakout->bar->width) {
+        
+        // Powerup collected! Apply effect (for now, just add score)
+        breakout->score += 500; // Bonus points for collecting powerup
+        
+        // TODO: Add specific powerup effects here (e.g., x2 multiplier, extra life, etc.)
+        
+        // Remove the powerup
+        destroy_sprite(breakout->powerups[i]);
+        breakout->powerups[i] = NULL;
+        breakout->active_powerups[i] = false;
+      }
+    }
+  }
+}
+
 void destroy_breakout(breakout_t *breakout) {
   if (breakout == NULL) {
     return;
@@ -239,6 +338,13 @@ void destroy_breakout(breakout_t *breakout) {
   for (int i = 0; i < 60; i++) {
     if (breakout->bricks[i] != NULL) {
       destroy_sprite(breakout->bricks[i]);
+    }
+  }
+
+  // Clean up powerups
+  for (int i = 0; i < 10; i++) {
+    if (breakout->powerups[i] != NULL) {
+      destroy_sprite(breakout->powerups[i]);
     }
   }
 
@@ -312,6 +418,13 @@ void handle_ball_collisions(breakout_t *breakout) {
       }
       breakout->score += 100;
       breakout->active_bricks[i] = false;
+      
+      // 20% chance to spawn a powerup when a brick is destroyed
+      if ((rand() % 100) < 20) {
+        spawn_powerup(breakout, breakout->bricks[i]->x + breakout->bricks[i]->width / 2, 
+                     breakout->bricks[i]->y + breakout->bricks[i]->height);
+      }
+      
       break;
     }
   }

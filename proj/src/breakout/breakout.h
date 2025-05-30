@@ -8,6 +8,8 @@ typedef struct {
   Sprite *bar;
   Sprite *ball;
   Sprite *bricks[60];
+  Sprite *powerups[10];  // Support up to 10 powerups
+  bool active_powerups[10];
   bool active_bricks[60];
   int lives;
   int score;
@@ -25,6 +27,14 @@ int draw_lives(breakout_t *breakout);
 int draw_score(breakout_t *breakout);
 
 int draw_breakout(breakout_t *breakout);
+
+int draw_powerup(breakout_t *breakout);
+
+void spawn_powerup(breakout_t *breakout, int x, int y);
+
+void update_powerups(breakout_t *breakout);
+
+void handle_powerup_collisions(breakout_t *breakout);
 
 void destroy_breakout(breakout_t *breakout);
 

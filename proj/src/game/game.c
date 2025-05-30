@@ -1,6 +1,8 @@
 #include "game.h"
 #include "../sprite/sprite.h"
 #include "../assets/bar_xpm.h"
+#include <stdlib.h>
+#include <time.h>
 
 // TODO: put all scancodes in a separate header file
 // initialize the game structure and set initial state
@@ -11,6 +13,8 @@ game_t *game_init() {
     printf("Error allocating memory for game structure\n");
     return NULL;
   }
+
+  srand(time(NULL));
 
   game->current_state = STATE_MENU;
 
