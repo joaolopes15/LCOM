@@ -20,7 +20,7 @@ game_over_menu_t *game_over_menu_init() {
   game_over_menu->selected_option = 0;
 
   game_over_menu->gameover_sprite = NULL;
-  game_over_menu->highscore_sprite = NULL;
+  // game_over_menu->highscore_sprite = NULL;
   game_over_menu->retry_sprite = NULL;
   game_over_menu->retryS_sprite = NULL;
   game_over_menu->exittomenu_sprite = NULL;
@@ -34,11 +34,11 @@ game_over_menu_t *game_over_menu_init() {
     return NULL;
   }
 
-  game_over_menu->highscore_sprite = create_sprite((xpm_map_t) highscore_xpm);
+  /* game_over_menu->highscore_sprite = create_sprite((xpm_map_t) highscore_xpm);
   if (game_over_menu->highscore_sprite == NULL) {
     destroy_game_over(game_over_menu);
     return NULL;
-  }
+  } */
 
   game_over_menu->retry_sprite = create_sprite((xpm_map_t) retry_xpm);
   if (game_over_menu->retry_sprite == NULL) {
@@ -153,9 +153,9 @@ void draw_game_over(game_over_menu_t *game_over_menu) {
         draw_sprite(game_over_menu->gameover_sprite, 250, 50);
     }
 
-    if (game_over_menu->highscore_sprite != NULL) {
+    /* if (game_over_menu->highscore_sprite != NULL) {
         draw_sprite(game_over_menu->highscore_sprite, 250, 200);
-    }
+    } */
 
   if (game_over_menu->selected_option == 0) {
     if (game_over_menu->retryS_sprite) {
@@ -193,10 +193,10 @@ void destroy_game_over(game_over_menu_t *game_over_menu) {
         return;
     }
 
-    if (game_over_menu->highscore_sprite != NULL) {
+    /* if (game_over_menu->highscore_sprite != NULL) {
         destroy_sprite(game_over_menu->highscore_sprite);
         game_over_menu->highscore_sprite = NULL;
-    }
+    } */
 
     if (game_over_menu->retry_sprite != NULL) {
         destroy_sprite(game_over_menu->retry_sprite);

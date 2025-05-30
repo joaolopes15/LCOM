@@ -2,7 +2,6 @@
 #define MAINMENU_H
 
 #include "../sprite/sprite.h"
-#include "background.h"
 #include "menu_action_enum.h"
 
 typedef struct {
