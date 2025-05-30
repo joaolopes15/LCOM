@@ -343,22 +343,47 @@ void handle_powerup_collisions(breakout_t *breakout) {
 void spawn_extra_ball(breakout_t *breakout) {
   if (breakout == NULL) return;
   
+  // First, collect all active balls to randomly select from
+  Sprite *active_ball_list[5];
+  int active_count = 0;
+  
+  // Check main ball (index 0)
+  if (breakout->ball != NULL) {
+    active_ball_list[active_count] = breakout->ball;
+    active_count++;
+  }
+  
+  // Check additional balls (indices 1-4)
+  for (int j = 1; j < 5; j++) {
+    if (breakout->active_balls[j] && breakout->balls[j] != NULL) {
+      active_ball_list[active_count] = breakout->balls[j];
+      active_count++;
+    }
+  }
+  
+  // If no active balls, can't spawn
+  if (active_count == 0) return;
+  
+  // Randomly select one of the active balls as the source
+  int source_index = rand() % active_count;
+  Sprite *source_ball = active_ball_list[source_index];
+  
   // Find an empty slot for the new ball
   for (int i = 1; i < 5; i++) {
     if (!breakout->active_balls[i]) {
       breakout->balls[i] = create_sprite((xpm_map_t) ball_xpm);
       if (breakout->balls[i] != NULL) {
-        // Position the new ball at the same location as the main ball
-        breakout->balls[i]->x = breakout->ball->x;
-        breakout->balls[i]->y = breakout->ball->y;
+        // Position the new ball at the same location as the randomly selected ball
+        breakout->balls[i]->x = source_ball->x;
+        breakout->balls[i]->y = source_ball->y;
         
         // Give it a different speed direction (slightly angled)
-        if (breakout->ball->xspeed != 0 || breakout->ball->yspeed != 0) {
-          // If main ball is moving, give new ball a different angle
-          breakout->balls[i]->xspeed = -breakout->ball->xspeed + (rand() % 3 - 1);
-          breakout->balls[i]->yspeed = breakout->ball->yspeed + (rand() % 3 - 1);
+        if (source_ball->xspeed != 0 || source_ball->yspeed != 0) {
+          // If source ball is moving, give new ball a different angle
+          breakout->balls[i]->xspeed = -source_ball->xspeed + (rand() % 3 - 1);
+          breakout->balls[i]->yspeed = source_ball->yspeed + (rand() % 3 - 1);
         } else {
-          // If main ball is stationary, give new ball initial movement
+          // If source ball is stationary, give new ball initial movement
           breakout->balls[i]->xspeed = 2 + (rand() % 3);
           breakout->balls[i]->yspeed = -3;
         }
